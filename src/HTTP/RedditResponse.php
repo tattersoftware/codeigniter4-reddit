@@ -6,6 +6,7 @@ use Config\Services;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
 use Tatter\Reddit\Exceptions\TokensException;
 use Tatter\Handlers\Interfaces\HandlerInterface;
+use DomainException;
 use JsonException;
 
 /**
@@ -23,7 +24,7 @@ class RedditResponse extends Response
 	 *
 	 * @return array|object
 	 *
-	 * @throws JsonException, HTTPException
+	 * @throws DomainException, JsonException
 	 */
 	public function getResult(bool $assoc = false)
 	{
@@ -33,7 +34,7 @@ class RedditResponse extends Response
 		// Check for errors
 		if (isset($result->error))
 		{
-			throw new HTTPException($result->error_description ?? $result->error);
+			throw new DomainException($result->error_description ?? $result->error);
 		}
 
 		return $assoc ? (array) $result : $result;
