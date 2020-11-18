@@ -2,6 +2,8 @@
 
 use CodeIgniter\Test\CIDatabaseTestCase;
 use Config\Services;
+use Tatter\Reddit\Config\Reddit as RedditConfig;
+use Tatter\Reddit\Reddit;
 
 class RedditTestCase extends CIDatabaseTestCase
 {
@@ -15,8 +17,18 @@ class RedditTestCase extends CIDatabaseTestCase
 	 */
 	protected $namespace = 'Tatter\Reddit';
 
+	/**
+	 * Reddit instance preconfigured for testing
+	 *
+	 * @var Reddit
+	 */
+	protected $reddit = true;
+
 	public function setUp(): void
 	{
 		parent::setUp();
+
+		$this->reddit = new Reddit(new RedditConfig());
+		$this->reddit->setSubreddit('pythonforengineers');
 	}
 }

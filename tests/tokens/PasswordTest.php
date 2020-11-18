@@ -4,10 +4,12 @@ use Config\Services;
 use Tatter\Reddit\Exceptions\TokensException;
 use Tests\Support\RedditTestCase;
 
-class CURLTest extends RedditTestCase
+class PasswordTest extends RedditTestCase
 {
 	public function testRetrieve()
 	{
-		$this->assertTrue(true);
+		$result = PasswordHandler::retrieve();
+
+		$this->assertIsString($result);
 	}
 }

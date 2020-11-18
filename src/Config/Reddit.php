@@ -14,18 +14,23 @@ use CodeIgniter\Config\BaseConfig;
 class Reddit extends BaseConfig
 {
 	/**
-	 * Username for authenticating the API.
+	 * The default subreddit to query.
 	 *
 	 * @var string
 	 */
-	public $username = '';
+	public $subreddit = '';
 
 	/**
-	 * Password for authenticating the API.
+	 * Token handlers in priority order.
 	 *
-	 * @var string
+	 * @var string[]
 	 */
-	public $password = '';
+	public $tokenHandlers = [
+		'Tatter\Reddit\Tokens\MemoryHandler',
+		'Tatter\Reddit\Tokens\ConfigHandler',
+		'Tatter\Reddit\Tokens\CacheHandler',
+		'Tatter\Reddit\Tokens\PasswordHandler',
+	];
 
 	/**
 	 * API client ID.
@@ -42,6 +47,20 @@ class Reddit extends BaseConfig
 	public $clientSecret = '';
 
 	/**
+	 * Username for authenticating the API.
+	 *
+	 * @var string
+	 */
+	public $username = '';
+
+	/**
+	 * Password for authenticating the API.
+	 *
+	 * @var string
+	 */
+	public $password = '';
+
+	/**
 	 * Access token from OAuth.
 	 *
 	 * @var string
@@ -49,11 +68,12 @@ class Reddit extends BaseConfig
 	public $accessToken = '';
 
 	/**
-	 * User Agent to use for API requests.
+	 * User Agent to use for API requests. Format:
+	 * <platform>:<app ID>:<version string> (by /u/<reddit username>)
 	 *
 	 * @var string
 	 */
-	public $userAgent = '';
+	public $userAgent = 'web:com.tattersoftware.reddit:v1.0.0 (by /u/mgatner)';
 
 	/**
 	 * Return URL after authentication.

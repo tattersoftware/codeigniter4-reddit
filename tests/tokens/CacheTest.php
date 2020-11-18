@@ -9,7 +9,7 @@ class CacheTest extends CIUnitTestCase
 	{
 		$this->expectException(TokensException::class);
 
-		$result = CacheHandler::retrieve();
+		CacheHandler::retrieve();
 	}
 
 	public function testRetrieveSucceeds()
@@ -21,5 +21,14 @@ class CacheTest extends CIUnitTestCase
 
 		$this->assertIsString($result);
 		$this->assertEquals($token, $result);
+	}
+
+	public function testStoreSucceeds()
+	{
+		$token = 'foobar';
+
+		CacheHandler::store($token);
+
+		$this->assertEquals($token, cache('reddit_access_token'));
 	}
 }

@@ -25,8 +25,6 @@ class CacheHandler implements TokensInterface
 	 * Caches the access token.
 	 *
 	 * @param string $token The access token
-	 *
-	 * @throws TokensException
 	 */
 	public static function store(string $token): void
 	{

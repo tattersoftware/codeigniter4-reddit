@@ -19,8 +19,6 @@ interface TokensInterface
 
 	/**
 	 * @param string $token The access token
-	 *
-	 * @throws TokensException
 	 */
 	public static function store(string $token): void;
 }

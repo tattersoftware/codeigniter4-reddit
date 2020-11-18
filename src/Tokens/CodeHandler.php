@@ -1,9 +1,10 @@
 <?php namespace Tatter\Reddit\Tokens;
 
+use CodeIgniter\HTTP\Exceptions\HTTPException;
 use Config\Services;
 use Tatter\Reddit\Exceptions\TokensException;
 
-class CURLHandler implements TokensInterface
+class CodeHandler implements TokensInterface
 {
 	/**
 	 * Retrieves a new access token from the
@@ -15,29 +16,38 @@ class CURLHandler implements TokensInterface
 	 */
 	public static function retrieve(): string
 	{
-		$curl   = Services::curlrequest();
 		$config = config('Reddit');
-
-		throw new TokensException('Authentication failed: ');
-
-		$response = $curl->setHeader('Expect', '')
+		$curl   = Services::curlrequest()
+			->setHeader('Expect', '')
 			->setAuth($config->clientId, $config->clientSecret)
 			->setBody(http_build_query([
 				'grant_type' => 'password',
-				'username' => $config->username,
-				'password' => $config->password,
-			]))
-			->post($config->tokenURL);
+				'username'   => $config->username,
+				'password'   => $config->password,
+			]));
 
-		dd($response);
+		try
+		{
+			$response = $curl->post($config->tokenURL, [
+				'http_errors' => false,
+			]);
+		}
+		catch (HTTPException $e)
+		{
+			throw new TokensException($e->getMessage(), $e->getCode(), $e);
+		}
+
+		$body = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+		dd($body);
+
+		throw new TokensException('Authentication failed: ');
 	}
 
 	/**
 	 * Not relevent.
 	 *
 	 * @param string $token The access token
-	 *
-	 * @throws TokensException
 	 */
 	public static function store(string $token): void
 	{
