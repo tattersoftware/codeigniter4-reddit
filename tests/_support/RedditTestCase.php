@@ -22,7 +22,7 @@ class RedditTestCase extends CIDatabaseTestCase
 	 *
 	 * @var Reddit
 	 */
-	protected $reddit = true;
+	protected $reddit;
 
 	public function setUp(): void
 	{

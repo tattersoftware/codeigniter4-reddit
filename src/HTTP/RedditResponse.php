@@ -25,17 +25,17 @@ class RedditResponse extends Response
 	 *
 	 * @throws JsonException, HTTPException
 	 */
-	public static function getResult(bool $assoc = true)
+	public function getResult(bool $assoc = false)
 	{
 		// Decode the response
-		$result = json_decode($this->getBody(), true, 512, JSON_THROW_ON_ERROR);
+		$result = json_decode($this->getBody(), $assoc, 512, JSON_THROW_ON_ERROR);
 
 		// Check for errors
-		if (isset($result['error']))
+		if (isset($result->error))
 		{
-			throw new HTTPException($result['error_description'] ?? $result['error']);
+			throw new HTTPException($result->error_description ?? $result->error);
 		}
 
-		return $assoc ? $result : (object) $result;
+		return $assoc ? (array) $result : $result;
 	}
 }

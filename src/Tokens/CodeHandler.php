@@ -17,7 +17,9 @@ class CodeHandler implements TokensInterface
 	public static function retrieve(): string
 	{
 		$config = config('Reddit');
-		$curl   = Services::curlrequest()
+		$curl   = Services::curlrequest([
+				'http_errors' => false,
+			], new RedditResponse(config('App')))
 			->setHeader('Expect', '')
 			->setAuth($config->clientId, $config->clientSecret)
 			->setBody(http_build_query([
@@ -28,9 +30,7 @@ class CodeHandler implements TokensInterface
 
 		try
 		{
-			$response = $curl->post($config->tokenURL, [
-				'http_errors' => false,
-			]);
+			$response = $curl->post($config->tokenURL);
 		}
 		catch (HTTPException $e)
 		{

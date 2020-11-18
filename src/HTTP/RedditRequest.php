@@ -1,13 +1,10 @@
 <?php namespace Tatter\Reddit\HTTP;
 
 use CodeIgniter\HTTP\CURLRequest;
-use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
-use Config\Services;
+use CodeIgniter\HTTP\URI;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
 use Tatter\Reddit\Exceptions\TokensException;
-use Tatter\Handlers\Interfaces\HandlerInterface;
-use JsonException;
 
 /**
  * Reddit Request Class
@@ -20,58 +17,133 @@ use JsonException;
 class RedditRequest extends CURLRequest
 {
 	/**
-	 * Fullname of an item in the listing to use
-	 * as the anchor point for the beginning of the slice.
+	 * Token handlers in priority order.
 	 *
-	 * @var string|null
+	 * @var string[]
 	 */
-	protected $after;
+	public $tokenHandlers;
 
 	/**
-	 * Fullname of an item in the listing to use
-	 * as the anchor point for the end of a slice.
+	 * Default query parameters to append to the URI.
 	 *
-	 * @var string|null
+	 * - after    Fullname of an item in the listing to use as the anchor point for the beginning of the slice
+	 * - before   Fullname of an item in the listing to use as the anchor point for the end of a slice
+	 * - count    The number of items already seen in this listing
+	 * - limit    The maximum number of items to return in this slice of the listing
+	 * - show     Optional parameter; if "all" is passed, filters such as "hide links that I have voted on" will be disabled
+	 * - raw_json Opts out of legacy JSON special character escaping
+	 *
+	 * @var array
 	 */
-	protected $before;
+	protected $query = [
+		'after'    => null,
+		'before'   => null,
+		'count'    => null,
+		'limit'    => null,
+		'show'     => null,
+		'raw_json' => 1,
+	];
 
 	/**
-	 * The maximum number of items to return in
-	 * this slice of the listing.
+	 * Query parameters for the next request.
 	 *
-	 * @var int|null
+	 * @var array
 	 */
-	protected $limit;
-
-	/**
-	 * The number of items already seen in this listing.
-	 *
-	 * @var int|null
-	 */
-	protected $count;
-
-	/**
-	 * Optional parameter; if "all" is passed, filters such as
-	 * "hide links that I have voted on" will be disabled.
-	 *
-	 * @var string|null
-	 */
-	protected $show;
+	protected $tempQuery;
 
 	/**
 	 * @param RedditConfig $config
 	 */
 	public function __construct(RedditConfig $config)
 	{
-		parent::__construct(config('App'), new URI($config->baseURL), new RedditResponse(), [
-			'baseURI'     => $this->config->baseURL,
-			'user_agent'  => $this->config->userAgent,
+		parent::__construct(config('App'), new URI($config->baseURL), new RedditResponse(config('App')), [
+			'baseURI'     => $config->baseURL,
 			'http_errors' => false,
 			'timeout'     => 3,
+			'user_agent'  => $config->userAgent,
 		]);
+
+		$this->tokenHandlers = $config->tokenHandlers;
+		$this->reset();
 	}
 
 	//--------------------------------------------------------------------
+
+	/**
+	 * Resets query parameters between calls.
+	 *
+	 * @returns $this
+	 */
+	public function reset(): self
+	{
+		$this->tempQuery = $this->query;
+		return $this;
+	}
+
+	/**
+	 * Sets a query parameter value
+	 *
+	 * @param string $name
+	 * @param mixed|null $value
+	 *
+	 * @returns $this
+	 */
+	public function setQuery(string $name, $value): self
+	{
+		$this->tempQuery[$name] = $value;
+
+		return $this;
+	}
+
+	/**
+	 * Returns the query parameter(s) for the next request.
+	 * Mostly for testing.
+	 *
+	 * @param string $name Optional parameter name filter
+	 *
+	 * @returns array|mixed|null
+	 */
+	public function getQuery(string $name = null)
+	{
+		if (is_null($name))
+		{
+			return $this->tempQuery;
+		}
+
+		return $this->tempQuery[$name] ?? null;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Sends a cURL request and parses the response.
+	 *
+	 * @param string $uri      URI segment (relative to baseURL)
+	 * @param array|null $data Additional data for the request
+	 * @param array $query     Additional query parameters
+	 *
+	 * @return RedditResponse
+	 *
+	 * @throws HTTPException, TokensException
+	 */
+	public function submit(string $uri, $data = null, $query = []): RedditResponse
+	{
+		// Determine the query parameters, ignoring null values
+		$query = array_merge($this->tempQuery, $query);
+		$query = array_filter($query, static function($var) {
+			return $var !== null;
+		});
+
+		// Append the query to the URI
+		if (! empty($query))
+		{
+			$uri .= '?' . http_build_query($query);
+		}
+
+		$this->setHeader('Expect', '')->setHeader('Authorization', 'bearer ' . $this->token());
+
+		return is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+	}
 
 	/**
 	 * Retrieves an access token.
@@ -84,7 +156,7 @@ class RedditRequest extends CURLRequest
 	{
 		// Try each handler, tracking failures
 		$failed = [];
-		foreach ($this->config->tokenHandlers as $class)
+		foreach ($this->tokenHandlers as $class)
 		{
 			try
 			{
@@ -116,29 +188,5 @@ class RedditRequest extends CURLRequest
 		}
 
 		return $token;
-	}
-
-	/**
-	 * Sends a cURL request and parses the response.
-	 *
-	 * @param string $uri      URI segment (relative to baseURL)
-	 * @param array $query     Query parameters to append to the URI
-	 * @param array|null $data Additional data for the request
-	 *
-	 * @return RedditResponse
-	 *
-	 * @throws HTTPException, TokensException
-	 */
-	public function submit(string $uri, $query = [], $data = null): RedditResponse
-	{
-		// Apply JSON format override
-		$query['raw_json'] = 1;
-
-		// Append any queries to the URI
-		$uri .= '?' . http_build_query($query);
-
-		$this->setHeader('Expect', '')->setHeader('Authorization', 'bearer ' . $this->token());
-
-		return is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
 	}
 }
