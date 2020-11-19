@@ -14,11 +14,11 @@ use CodeIgniter\Config\BaseConfig;
 class Reddit extends BaseConfig
 {
 	/**
-	 * The default subreddit to query.
+	 * A default subreddit to apply to requests.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public $subreddit = '';
+	public $subreddit;
 
 	/**
 	 * Token handlers in priority order.

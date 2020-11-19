@@ -26,8 +26,8 @@ class RedditRequest extends CURLRequest
 	/**
 	 * Default query parameters to append to the URI.
 	 *
-	 * - after    Fullname of an item in the listing to use as the anchor point for the beginning of the slice
-	 * - before   Fullname of an item in the listing to use as the anchor point for the end of a slice
+	 * - after    Name of an item in the listing to use as the anchor point for the beginning of the slice
+	 * - before   Name of an item in the listing to use as the anchor point for the end of a slice
 	 * - count    The number of items already seen in this listing
 	 * - limit    The maximum number of items to return in this slice of the listing
 	 * - show     Optional parameter; if "all" is passed, filters such as "hide links that I have voted on" will be disabled

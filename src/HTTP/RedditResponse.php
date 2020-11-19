@@ -43,7 +43,8 @@ class RedditResponse extends Response
 			// Check for errors
 			if (isset($result->error))
 			{
-				throw new RedditException($result->error_description ?? $result->error);
+				$message = $result->message ?? $result->error_description ?? $result->error;
+				throw new RedditException(lang('Reddit.errorResponse', [$message]));
 			}
 
 			$this->result = $result;
@@ -76,5 +77,19 @@ class RedditResponse extends Response
 		}
 
 		return $object;
+	}
+
+	/**
+	 * Resets the stored $result anytime $body changes
+	 *
+	 * @param mixed $data
+	 *
+	 * @return $this
+	 */
+	public function setBody($data): self
+	{
+		$this->result = null;
+
+		return parent::setBody($data);
 	}
 }
