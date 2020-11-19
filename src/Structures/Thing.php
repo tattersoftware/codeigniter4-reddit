@@ -1,15 +1,16 @@
-<?php namespace Tatter\Reddit\Things;
+<?php namespace Tatter\Reddit\Structures;
 
 use Tatter\Reddit\Exceptions\RedditException;
+use stdClass;
 
 /**
  * Thing Abstract Class
  *
  * Base class for all API return casts.
  *
- * @see https://www.reddit.com/dev/api#fullnames
+ * @see https://github.com/reddit-archive/reddit/wiki/JSON
  */
-abstract class Thing
+abstract class Thing implements Kind
 {
 	/**
 	 * Class handlers for each prefixed kind.
@@ -45,7 +46,7 @@ abstract class Thing
 	protected $id;
 
 	/**
-	 * All the data from the API
+	 * Data from the API
 	 *
 	 * @var array|null
 	 */
@@ -54,35 +55,39 @@ abstract class Thing
 	//--------------------------------------------------------------------
 
 	/**
-	 * Creates a new child class a name.
+	 * Creates a new child class from API data.
 	 *
-	 * @param string $name
+	 * @param stdClass $input
 	 *
 	 * @return static
-	 *
-	 * @throws RedditException
 	 */
-    public static function fromName(string $name): self
+    public static function create(object $input): static
     {
-    	// Verify the name
-    	if (! preg_match(self::REGEX, $name))
-    	{
-    		throw new RedditException(lang('Reddit.invalidThingName', [$name]));
-    	}
+		// Validate
+		if (! isset($input->kind)
+			|| ! isset(static::KINDS[$input->kind])
+			|| ! isset($input->data)
+			|| ! is_object($input->data)
+		)
+		{
+			throw new RedditException(lang('Reddit.invalidListing'));
+		}
 
-		// WIP
+		$class = static::KINDS[$input->kind];
+
+		return new $class($input->data);
     }
 
 	/**
-	 * Creates a new child class from API data.
+	 * Sets the data from API input.
 	 *
-	 * @param array|object $data
+	 * @param object $data
 	 *
-	 * @return static
+	 * @return $this
 	 */
-    public static function fromData($data): self
+    public function __construct(object $data = null)
     {
-		// WIP
+    	$this->data = $data;
     }
 
 	//--------------------------------------------------------------------
@@ -104,9 +109,9 @@ abstract class Thing
 	 */
     public function kindName(): string
     {
-    	$class = self::KINDS[$this->kind];
+    	$class = static::KINDS[$this->kind];
 
-		return substr($class, strrpos($class, '\\') + 1)
+		return substr($class, strrpos($class, '\\') + 1);
     }
 
 	/**
@@ -143,20 +148,6 @@ abstract class Thing
 	//--------------------------------------------------------------------
 
 	/**
-	 * Sets the data. Usually only used during creation.
-	 *
-	 * @param array|object|null $data
-	 *
-	 * @return $this
-	 */
-    public function setData($data = null): self
-    {
-    	$this->data = is_object($data) ? (array) $data : $data;
-
-		return $this;
-    }
-
-	/**
 	 * Magic getter for $data values.
 	 *
 	 * @param string $key
@@ -166,7 +157,7 @@ abstract class Thing
 	 */
 	public function __get(string $key)
 	{
-		if (! )
+		if (! $this->__isset($key))
 		{
 			throw new RedditException(lang('Reddit.missingThingKey', [
 				$key,

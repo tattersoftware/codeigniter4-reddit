@@ -1,4 +1,4 @@
-<?php namespace Tatter\Reddit\Things;
+<?php namespace Tatter\Reddit\Structures;
 
 class Comment extends Thing
 {
