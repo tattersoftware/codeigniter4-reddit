@@ -4,6 +4,9 @@ use Tatter\Reddit\Config\Reddit as RedditConfig;
 use Tatter\Reddit\Exceptions\RedditException;
 use Tatter\Reddit\HTTP\RedditRequest;
 use Tatter\Reddit\HTTP\RedditResponse;
+use Tatter\Reddit\Structures\Listing;
+use Tatter\Reddit\Structures\Kind;
+use Tatter\Reddit\Structures\Thing;
 
 /**
  * Reddit Class
@@ -26,9 +29,9 @@ class Reddit
 	protected $request;
 
 	/**
-	 * Name of the current subreddit
+	 * Name of the subreddit to apply to requests
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	protected $subreddit;
 
@@ -52,22 +55,43 @@ class Reddit
 		$this->subreddit($config->subreddit);
 	}
 
-	//--------------------------------------------------------------------
-	// CONTENT ENDPOINTS
-	//--------------------------------------------------------------------
+	/**
+	 * Gets the current subreddit.
+	 * Throws if the property is empty to prevent URI failures.
+	 *
+	 * @return string
+	 * @throws RedditException
+	 */
+	public function getSubreddit(): string
+	{
+		if (empty($this->subreddit))
+		{
+			throw new RedditException(lang('Reddit.missingSubreddit'));
+		}
+
+		return $this->subreddit;
+	}
 
 	/**
-	 * Fetches subreddit comments
+	 * Returns the RedditRequest's current query parameters.
+	 * Mostly for testing.
 	 *
-	 * @return mixed
+	 * @return array
 	 */
-	public function comments()
+	public function getQuery(): array
 	{
-		$uri = '/r/' . $this->getSubreddit() . '/comments';
+		return $this->request->getQuery();
+	}
 
-		$response = $this->fetch($uri);
-
-		return $response->getResultPath('data/children');
+	/**
+	 * Returns the archive of the last request.
+	 * Mostly for testing.
+	 *
+	 * @return array|null
+	 */
+	public function getArchive(): ?array
+	{
+		return $this->archive;
 	}
 
 	//--------------------------------------------------------------------
@@ -75,8 +99,34 @@ class Reddit
 	//--------------------------------------------------------------------
 
 	/**
-	 * Passes a request through to RedditRequest, archiving the parameters
-	 * and returning the raw RedditResponse.
+	 * Runs the request and processes the result into the appropriate class.
+	 *
+	 * @param string $uri      URI segment
+	 * @param array|null $data Additional data for the request
+	 * @param array $query     Additional query parameters
+	 *
+	 * @return Kind
+	 */
+	public function fetch(string $uri, $data = null, $query = [])
+	{
+		// See if we need to prepend a subreddit
+		$uri = '/' . trim($uri, '/ ');
+		if ($this->subreddit && strpos($uri, '/r/') === false)
+		{
+			$uri = '/r/' . $this->getSubreddit() . $uri;
+		}
+
+		$response = $this->request($uri, $data, $query);
+
+		return $response->getResultPath('kind') === 'Listing'
+			? new Listing($response->getResult())
+			: Thing::create($response->getResult());
+	}
+
+	/**
+	 * Passes a request through to RedditRequest, archiving
+	 * the parameters and returning the RedditResponse.
+	 * Exposed for advanced options, but usually use `fetch()`.
 	 *
 	 * @param string $uri      URI segment
 	 * @param array|null $data Additional data for the request
@@ -86,7 +136,7 @@ class Reddit
 	 *
 	 * @throws RedditException
 	 */
-	public function fetch(string $uri, $data = null, $query = []): RedditResponse
+	public function request(string $uri, $data = null, $query = []): RedditResponse
 	{
 		$this->archive = [
 			'uri'   => $uri,
@@ -107,50 +157,30 @@ class Reddit
 		return $response;
 	}
 
-	/**
-	 * Gets the current subreddit.
-	 * Throws if the property is empty to prevent URI failures.
-	 *
-	 * @return string
-	 * @throws RedditException
-	 */
-	public function getSubreddit(): string
-	{
-		if (empty($this->subreddit))
-		{
-			throw new RedditException(lang('Reddit.missingSubreddit'));
-		}
-
-		return $this->subreddit;
-	}
-
-	/**
-	 * Sets the current subreddit
-	 *
-	 * @param string $subreddit
-	 *
-	 * @return $this
-	 */
-	public function subreddit(string $subreddit): self
-	{
-		$this->subreddit = $subreddit;
-
-		return $this;
-	}
-
 	//--------------------------------------------------------------------
 	// QUERY PARAMETERS
 	//--------------------------------------------------------------------
 
 	/**
-	 * Returns the RedditRequest's current query parameters.
-	 * Mostly for testing.
+	 * Validates and sets a subreddit
 	 *
-	 * @return array
+	 * @param string|null $subreddit
+	 *
+	 * @return $this
+	 * @throws RedditException
+	 *
+	 * @see https://github.com/snuze/snuze/blob/master/src/Reddit/Thing/Subreddit.php for regex
 	 */
-	public function getQuery(): array
+	public function subreddit(string $subreddit = null): self
 	{
-		return $this->request->getQuery();
+		$pattern = '/^((?:[a-z0-9](?:[a-z0-9_]){2,20})|reddit\.com|ca|de|es|eu|fr|it|ja|nl|pl|ru)$/i';
+		if (is_string($subreddit) && ! preg_match($pattern, $subreddit))
+		{
+			throw new RedditException(lang('Reddit.invalidSubreddit', [$subreddit]));
+		}
+		$this->subreddit = $subreddit;
+
+		return $this;
 	}
 
 	/**

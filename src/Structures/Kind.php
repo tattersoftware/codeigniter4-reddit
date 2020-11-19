@@ -9,13 +9,6 @@
 interface Kind
 {
 	/**
-	 * Returns the name of this kind, e.g. "Comment".
-	 *
-	 * @return string
-	 */
-    public function kindName(): string;
-
-	/**
 	 * Sets class data from API input.
 	 *
 	 * @param object $input

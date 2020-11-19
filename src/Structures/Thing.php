@@ -61,7 +61,7 @@ abstract class Thing implements Kind
 	 *
 	 * @return static
 	 */
-    public static function create(object $input): static
+    public static function create(object $input): self
     {
 		// Validate
 		if (! isset($input->kind)
@@ -100,18 +100,6 @@ abstract class Thing implements Kind
     public function kind(): string
     {
 		return $this->kind;
-    }
-
-	/**
-	 * Returns the name of this kind, e.g. "Comment".
-	 *
-	 * @return string
-	 */
-    public function kindName(): string
-    {
-    	$class = static::KINDS[$this->kind];
-
-		return substr($class, strrpos($class, '\\') + 1);
     }
 
 	/**

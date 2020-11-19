@@ -18,7 +18,7 @@ class Listing extends ArrayObject
 	 *
 	 * @var string|null
 	 */
-	protected $after;
+	public $after;
 
 	/**
 	 * Fullname of the listing that follows before this page.
@@ -26,7 +26,7 @@ class Listing extends ArrayObject
 	 *
 	 * @var string|null
 	 */
-	protected $before;
+	public $before;
 
 	//--------------------------------------------------------------------
 
@@ -55,16 +55,6 @@ class Listing extends ArrayObject
 		$this->after  = $input->after ?? null;
 		$this->before = $input->before ?? null;
 
-		parent::construct($input->data->children);
+		parent::__construct($input->data->children);
 	}
-
-	/**
-	 * Returns the name of this kind
-	 *
-	 * @return string
-	 */
-    public function kindName(): string
-    {
-    	return 'Listing';
-    }
 }
