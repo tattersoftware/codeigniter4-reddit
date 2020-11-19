@@ -1,6 +1,6 @@
 <?php namespace Tatter\Reddit\Structures;
 
-use ArrayObject;
+use Iterator;
 use Tatter\Reddit\Exceptions\RedditException;
 
 /**
@@ -10,7 +10,7 @@ use Tatter\Reddit\Exceptions\RedditException;
  *
  * @see https://github.com/reddit-archive/reddit/wiki/JSON#listing
  */
-class Listing extends ArrayObject
+class Listing extends Kind implements Iterator
 {
 	/**
 	 * Fullname of the listing that follows after this page.
@@ -28,11 +28,17 @@ class Listing extends ArrayObject
 	 */
 	public $before;
 
+	/**
+	 * Children from API result.
+	 *
+	 * @var array
+	 */
+	protected $children;
+
 	//--------------------------------------------------------------------
 
 	/**
-	 * Extracts Listing fields and applies its
-	 * children to the ArrayObject
+	 * Extracts Listing fields and stores its children
 	 *
 	 * @param object $input Result of kind "Listing" from RedditResponse
 	 *
@@ -40,7 +46,22 @@ class Listing extends ArrayObject
 	 */
 	public function __construct(object $input)
 	{
-		// Validate
+		$this->validate($input);
+
+		$this->after    = $input->after ?? null;
+		$this->before   = $input->before ?? null;
+		$this->children = $input->data->children;
+	}
+
+	/**
+	 * Validates API input.
+	 *
+	 * @param object $input
+	 *
+	 * @throws RedditException
+	 */
+	protected function validate(object $input)
+	{
 		if (! isset($input->kind)
 			|| $input->kind !== 'Listing'
 			|| ! isset($input->data)
@@ -49,12 +70,53 @@ class Listing extends ArrayObject
 			|| ! is_array($input->data->children)
 		)
 		{
-			throw new RedditException(lang('Reddit.invalidListing'));
+			throw new RedditException(lang('Reddit.invalidKindInput'));
+		}
+	}
+
+	//--------------------------------------------------------------------
+	// ITERATOR METHODS
+	//--------------------------------------------------------------------
+
+	/**
+	 * @return Thing|false
+	 */
+	public function current()
+	{
+		if ($input = current($this->children))
+		{
+			return Thing::create($input);
 		}
 
-		$this->after  = $input->after ?? null;
-		$this->before = $input->before ?? null;
-
-		parent::__construct($input->data->children);
+		return false;
 	}
+
+	/**
+	 * @return int
+	 */
+	public function key(): int
+	{
+		return key($this->children);
+	}
+
+	public function next(): void
+	{
+		next($this->children);
+	}
+
+	public function rewind(): void
+	{
+		reset($this->children);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function valid(): bool
+	{
+		$key = key($this->children);
+
+		return ($key !== null && $key !== null);
+	}
+
 }

@@ -8,7 +8,7 @@ class ListingTest extends CIUnitTestCase
 	/**
 	 * @var string
 	 */
-	private $input = '{"kind":"Listing", "data":{"children":[{"bar":"bam"},{"foo":"baz"}]}, "after":"t3_abcdefg"}';
+	private $input = '{"kind":"Listing", "data":{"children":[{"kind":"t3", "data":{"subreddit":"pythonforengineers","name":"t3_jw6u2r"}}]}, "after":"t3_abcdefg"}';
 
 	/**
 	 * @dataProvider queryParameterProvider
@@ -20,7 +20,7 @@ class ListingTest extends CIUnitTestCase
 		if (! $isValid)
 		{
 			$this->expectException(RedditException::class);
-			$this->expectExceptionMessage(lang('Reddit.invalidListing'));
+			$this->expectExceptionMessage(lang('Reddit.invalidKindInput'));
 		}
 
 		$listing = new Listing($object);
@@ -46,5 +46,15 @@ class ListingTest extends CIUnitTestCase
 		$listing = new Listing(json_decode($this->input));
 
 		$this->assertEquals('t3_abcdefg', $listing->after);
+	}
+
+	public function testIterationCreatesThings()
+	{
+		$listing = new Listing(json_decode($this->input));
+
+		foreach ($listing as $thing)
+		{
+			$this->assertInstanceOf(Thing::class, $thing);
+		}
 	}
 }

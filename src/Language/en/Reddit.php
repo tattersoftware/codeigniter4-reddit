@@ -7,5 +7,5 @@ return [
 	'unverifiedPath'   => 'Unable to verify {0} in API response path {1}.',
 	'missingThingKey'  => 'The "{0}" key does not exist in this {1}.',
 	'invalidThingName' => '"{0}" is not a valid identifier.',
-	'invalidListing'   => 'Invalid listing data provided.',
+	'invalidKindInput' => 'Invalid API data provided.',
 ];

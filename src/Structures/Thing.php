@@ -10,7 +10,7 @@ use stdClass;
  *
  * @see https://github.com/reddit-archive/reddit/wiki/JSON
  */
-abstract class Thing implements Kind
+abstract class Thing extends Kind
 {
 	/**
 	 * Class handlers for each prefixed kind.
@@ -55,72 +55,46 @@ abstract class Thing implements Kind
 	//--------------------------------------------------------------------
 
 	/**
-	 * Creates a new child class from API data.
-	 *
-	 * @param stdClass $input
-	 *
-	 * @return static
-	 */
-    public static function create(object $input): self
-    {
-		// Validate
-		if (! isset($input->kind)
-			|| ! isset(static::KINDS[$input->kind])
-			|| ! isset($input->data)
-			|| ! is_object($input->data)
-		)
-		{
-			throw new RedditException(lang('Reddit.invalidListing'));
-		}
-
-		$class = static::KINDS[$input->kind];
-
-		return new $class($input->data);
-    }
-
-	/**
 	 * Sets the data from API input.
 	 *
-	 * @param object $data
+	 * @param object $input
 	 *
 	 * @return $this
 	 */
-    public function __construct(object $data = null)
-    {
-    	$this->data = $data;
-    }
+	public function __construct(object $input = null)
+	{
+		$this->validate($input);
+
+		$this->data = $input->data;
+		$this->id   = explode('_', $input->data->name)[1];
+	}
+
+	/**
+	 * Validates API input.
+	 *
+	 * @param object $input
+	 *
+	 * @throws RedditException
+	 */
+	protected function validate(object $input)
+	{
+		// Validate
+		if (! isset($input->kind)
+			|| ! isset(static::KINDS[$input->kind])
+			|| $input->kind !== $this->kind
+			|| ! isset($input->data)
+			|| ! is_object($input->data)
+			|| ! isset($input->data->name)
+			|| ! is_string($input->data->name)
+			|| ! preg_match(self::REGEX, $input->data->name)
+		)
+		{
+dd($input);
+			throw new RedditException(lang('Reddit.invalidKindInput'));
+		}
+	}
 
 	//--------------------------------------------------------------------
-
-	/**
-	 * Returns the prefix kind.
-	 *
-	 * @return string
-	 */
-    public function kind(): string
-    {
-		return $this->kind;
-    }
-
-	/**
-	 * Returns the prefix-less ID.
-	 *
-	 * @return string
-	 */
-    public function id(): string
-    {
-		return $this->id;
-    }
-
-	/**
-	 * Returns the base 36 ID in its integer form
-	 *
-	 * @return int
-	 */
-    public function int(): int
-    {
-		return base_convert($this->id, 36, 10);
-    }
 
 	/**
 	 * Returns the full name of this Thing.
@@ -128,10 +102,52 @@ abstract class Thing implements Kind
 	 *
 	 * @return string
 	 */
-    public function __toString(): string
-    {
+	public function name(): string
+	{
 		return $this->kind . '_' . $this->id;
-    }
+	}
+
+	/**
+	 * Returns the prefix kind.
+	 *
+	 * @return string
+	 */
+	public function kind(): string
+	{
+		return $this->kind;
+	}
+
+	/**
+	 * Returns the prefix-less ID.
+	 *
+	 * @return string
+	 */
+	public function id(): string
+	{
+		return $this->id;
+	}
+
+	/**
+	 * Returns the base 36 ID in its integer form
+	 *
+	 * @return int
+	 */
+	public function int(): int
+	{
+		return base_convert($this->id, 36, 10);
+	}
+
+	/**
+	 * Returns the name of this Thing's kind.
+	 *
+	 * @return string
+	 */
+	public function __toString(): string
+	{
+		$class = self::KINDS[$this->kind];
+
+		return substr($class, strrpos($class, '\\') + 1);
+	}
 
 	//--------------------------------------------------------------------
 
