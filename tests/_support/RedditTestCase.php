@@ -29,6 +29,6 @@ class RedditTestCase extends CIDatabaseTestCase
 		parent::setUp();
 
 		$this->reddit = new Reddit(new RedditConfig());
-		$this->reddit->setSubreddit('pythonforengineers');
+		$this->reddit->subreddit('pythonforengineers');
 	}
 }

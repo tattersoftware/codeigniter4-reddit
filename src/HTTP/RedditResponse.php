@@ -4,9 +4,9 @@ use CodeIgniter\HTTP\Response;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
 use Config\Services;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
+use Tatter\Reddit\Exceptions\RedditException;
 use Tatter\Reddit\Exceptions\TokensException;
 use Tatter\Handlers\Interfaces\HandlerInterface;
-use DomainException;
 use JsonException;
 
 /**
@@ -18,25 +18,63 @@ use JsonException;
 class RedditResponse extends Response
 {
 	/**
+	 * Stored version of the result.
+	 *
+	 * @var array|object|null
+	 */
+	protected $result;
+
+	/**
 	 * Parses a Reddit API or auth response.
 	 *
 	 * @param bool $assoc Whether to return an associative array instead of object
 	 *
 	 * @return array|object
 	 *
-	 * @throws DomainException, JsonException
+	 * @throws RedditException, JsonException
 	 */
 	public function getResult(bool $assoc = false)
 	{
-		// Decode the response
-		$result = json_decode($this->getBody(), $assoc, 512, JSON_THROW_ON_ERROR);
-
-		// Check for errors
-		if (isset($result->error))
+		if (is_null($this->result))
 		{
-			throw new DomainException($result->error_description ?? $result->error);
+			// Decode the response
+			$result = json_decode($this->getBody(), false, 512, JSON_THROW_ON_ERROR);
+
+			// Check for errors
+			if (isset($result->error))
+			{
+				throw new RedditException($result->error_description ?? $result->error);
+			}
+
+			$this->result = $result;
 		}
 
-		return $assoc ? (array) $result : $result;
+		return $assoc ? (array) $this->result : $this->result;
+	}
+
+	/**
+	 * Verifies the object path exists and returns the content.
+	 *
+	 * @param string $path Result properites in URI format, e.g. 'data/segment/part'
+	 *
+	 * @return mixed
+	 *
+	 * @throws RedditException
+	 */
+	public function getResultPath(string $path)
+	{
+		// If no result then try to get one on-the-fly
+		$object = $this->getResult();
+		foreach (explode('/', $path) as $segment)
+		{
+			if (! isset($object->$segment))
+			{
+				throw new RedditException(lang('Reddit.unverifiedPath', [$segment, $path]));
+			}
+
+			$object = $object->$segment;
+		}
+
+		return $object;
 	}
 }

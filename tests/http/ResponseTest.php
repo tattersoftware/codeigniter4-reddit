@@ -1,6 +1,7 @@
 <?php namespace Tatter\Reddit;
 
 use CodeIgniter\Test\CIUnitTestCase;
+use Tatter\Reddit\Exceptions\RedditException;
 use Tatter\Reddit\HTTP\RedditResponse;
 
 class ResponseTest extends CIUnitTestCase
@@ -27,11 +28,11 @@ class ResponseTest extends CIUnitTestCase
 		$this->response->getResult();
 	}
 
-	public function testGetResultThrowsDomainException()
+	public function testGetResultThrowsRedditException()
 	{
 		$this->response->setBody('{"error":"foo"}');
 
-		$this->expectException('DomainException');
+		$this->expectException(RedditException::class);
 		$this->expectExceptionMessage('foo');
 		
 		$this->response->getResult();
@@ -55,5 +56,24 @@ class ResponseTest extends CIUnitTestCase
 
 		$this->assertIsArray($result);
 		$this->assertEquals('bar', $result['foo']);
+	}
+
+	public function testGetResultPathThrows()
+	{
+		$this->response->setBody('{"foo":"bar"}');
+
+		$this->expectException(RedditException::class);
+		$this->expectExceptionMessage(lang('Reddit.unverifiedPath', ['bam', 'bam/baz']));
+
+		$this->response->getResultPath('bam/baz');
+	}
+
+	public function testGetResultPathReturnsContent()
+	{
+		$this->response->setBody('{"foo":{"bar":"bam"}}');
+
+		$result = $this->response->getResultPath('foo/bar');
+
+		$this->assertEquals('bam', $result);
 	}
 }

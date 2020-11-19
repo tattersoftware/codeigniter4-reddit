@@ -126,7 +126,7 @@ class RedditRequest extends CURLRequest
 	 *
 	 * @throws HTTPException, TokensException
 	 */
-	public function submit(string $uri, $data = null, $query = []): RedditResponse
+	public function fetch(string $uri, $data = null, $query = []): RedditResponse
 	{
 		// Determine the query parameters, ignoring null values
 		$query = array_merge($this->tempQuery, $query);

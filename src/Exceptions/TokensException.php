@@ -1,5 +1,5 @@
 <?php namespace Tatter\Reddit\Exceptions;
 
-class TokensException extends \RuntimeException
+class TokensException extends RedditException
 {
 }

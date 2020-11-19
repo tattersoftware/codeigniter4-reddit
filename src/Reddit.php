@@ -1,14 +1,9 @@
 <?php namespace Tatter\Reddit;
 
-use CodeIgniter\Cache\CacheInterface;
-use CodeIgniter\HTTP\CURLRequest;
-use CodeIgniter\HTTP\ResponseInterface;
-use CodeIgniter\HTTP\Exceptions\HTTPException;
-use Config\Services;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
-use Tatter\Reddit\Exceptions\TokensException;
-use Tatter\Handlers\Interfaces\HandlerInterface;
-use JsonException;
+use Tatter\Reddit\Exceptions\RedditException;
+use Tatter\Reddit\HTTP\RedditRequest;
+use Tatter\Reddit\HTTP\RedditResponse;
 
 /**
  * Reddit Class
@@ -24,6 +19,13 @@ class Reddit
 	protected $config;
 
 	/**
+	 * Reddit CURL client preconfigured for API calls
+	 *
+	 * @var RedditRequest
+	 */
+	protected $request;
+
+	/**
 	 * Name of the current subreddit
 	 *
 	 * @var string
@@ -31,73 +33,105 @@ class Reddit
 	protected $subreddit;
 
 	/**
-	 * CURL client preconfigured for API calls
+	 * Parameters from the last fetch, used for repeating requests
 	 *
-	 * @var CURLRequest
+	 * @var array|null
 	 */
-	protected $curl;
+	private $archive;
 
 	/**
 	 * Initializes the library.
 	 *
-	 * @param HandlersConfig|null $config
-	 * @param CacheInterface|null $cache
+	 * @param RedditConfig $config
 	 */
 	public function __construct(RedditConfig $config)
 	{
-		$this->config    = $config;
-		$this->subreddit = $config->subreddit;
-		$this->curl      = Services::curlrequest([
-			'baseURI'     => $this->config->baseURL,
-			'user_agent'  => $this->config->userAgent,
-			'http_errors' => false,
-			'timeout'     => 3,
-		]);
+		$this->config  = $config;
+		$this->request = new RedditRequest($config);
+
+		$this->subreddit($config->subreddit);
 	}
 
 	//--------------------------------------------------------------------
+	// CONTENT ENDPOINTS
+	//--------------------------------------------------------------------
 
 	/**
-	 * Parses a Reddit API or auth response.
+	 * Fetches subreddit comments
 	 *
-	 * @param ResponseInterface
-	 *
-	 * @return array
-	 *
-	 * @throws JsonException, HTTPException
-	 *
-	 * @todo Should move somewhere else, maybe a Response superset?
+	 * @return mixed
 	 */
-	public static function parseResponse(ResponseInterface $response): array
+	public function comments()
 	{
-		// Decode the response
-		$body = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+		$uri = '/r/' . $this->getSubreddit() . '/comments';
 
-		// Check for errors
-		if (isset($body['error']))
+		$response = $this->fetch($uri);
+
+		return $response->getResultPath('data/children');
+	}
+
+	//--------------------------------------------------------------------
+	// SUPPORT METHODS
+	//--------------------------------------------------------------------
+
+	/**
+	 * Passes a request through to RedditRequest, archiving the parameters
+	 * and returning the raw RedditResponse.
+	 *
+	 * @param string $uri      URI segment
+	 * @param array|null $data Additional data for the request
+	 * @param array $query     Additional query parameters
+	 *
+	 * @return RedditResponse
+	 *
+	 * @throws RedditException
+	 */
+	public function fetch(string $uri, $data = null, $query = []): RedditResponse
+	{
+		$this->archive = [
+			'uri'   => $uri,
+			'data'  => $data,
+			'query' => $query,
+		];
+
+		try
 		{
-			throw new HTTPException($body['error_description'] ?? $body['error']);
+			$response = $this->request->fetch($uri, $data, $query);
+		}
+		// Rethrow as a RedditException
+		catch (\Throwable $e)
+		{
+			throw new RedditException($e->getMessage(), $e->getCode(), $e);
 		}
 
-		return $body;
+		return $response;
 	}
 
-	//--------------------------------------------------------------------
-
 	/**
+	 * Gets the current subreddit.
+	 * Throws if the property is empty to prevent URI failures.
+	 *
 	 * @return string
+	 * @throws RedditException
 	 */
 	public function getSubreddit(): string
 	{
+		if (empty($this->subreddit))
+		{
+			throw new RedditException(lang('Reddit.missingSubreddit'));
+		}
+
 		return $this->subreddit;
 	}
 
 	/**
+	 * Sets the current subreddit
+	 *
 	 * @param string $subreddit
 	 *
 	 * @return $this
 	 */
-	public function setSubreddit(string $subreddit): self
+	public function subreddit(string $subreddit): self
 	{
 		$this->subreddit = $subreddit;
 
@@ -105,99 +139,82 @@ class Reddit
 	}
 
 	//--------------------------------------------------------------------
-
-	/**
-	 * Fetches the most recent comments
-	 *
-	 * @param string $subreddit
-	 *
-	 * @return $this
-	 */
-	public function fetchComments($sort = 'new', $limit = 50): array
-	{
-		$uri = '/r/' . $this->getSubreddit() . '/comments';
-
-		return $this->send($uri, [
-			'cb'    => time(),
-			'sort'  => $sort,
-			'limit' => $limit,
-		]);
-	}
-
+	// QUERY PARAMETERS
 	//--------------------------------------------------------------------
 
 	/**
-	 * Retrieves an access token.
+	 * Returns the RedditRequest's current query parameters.
+	 * Mostly for testing.
 	 *
-	 * @return string
-	 *
-	 * @throws TokensException
+	 * @return array
 	 */
-	protected function token(): string
+	public function getQuery(): array
 	{
-		// Try each handler, tracking failures
-		$failed = [];
-		foreach ($this->config->tokenHandlers as $class)
-		{
-			try
-			{
-				$token = $class::retrieve();
-				break;
-			}
-			catch (TokensException $e)
-			{
-				$failed[$class] = $e->getMessage();
-			}
-		}
-
-		// If no token was found then compile the error messages into one
-		if (empty($token))
-		{
-			$messages = [];
-			foreach ($failed as $class => $message)
-			{
-				$messages[] = "$class: $message";
-			}
-
-			throw new TokensException(implode(' ', $messages));
-		}
-
-		// Try to store the token back to failed handlers
-		foreach ($failed as $class => $message)
-		{
-			$class::store($token);
-		}
-
-		return $token;
+		return $this->request->getQuery();
 	}
 
 	/**
-	 * Sends a cURL request and parses the response.
+	 * Sets the "after" query parameter.
 	 *
-	 * @param string $uri      URI segment relative to baseURL
-	 * @param array $query     Query parameters to append to the URI
-	 * @param array|null $data Additional data for the request
-	 *
-	 * @return ResponseInterface
-	 *
-	 * @throws HTTPException, TokensException
+	 * @returns $this
 	 */
-	protected function send($uri, $query = [], $data = null): ResponseInterface
+	public function after(string $after = null): self
 	{
-		// Apply JSON format override
-		$query['raw_json'] = 1;
+		$this->request->setQuery('after', $after);
+		if (! is_null($after))
+		{
+			$this->request->setQuery('before', null);
+		}
 
-		// Append any queries to the URI
-		$uri .= '?' . http_build_query($query);
+		return $this;
+	}
 
-		$this->curl
-			->setHeader('Expect', '')
-			->setHeader('Authorization', 'bearer ' . $this->token());
+	/**
+	 * Sets the "before" query parameter.
+	 *
+	 * @returns $this
+	 */
+	public function before(string $before = null): self
+	{
+		$this->request->setQuery('before', $before);
+		if (! is_null($before))
+		{
+			$this->request->setQuery('after', null);
+		}
 
-		$response = is_null($data) ? $this->curl->get($uri) : $this->curl->post($uri, ['form_params' => $data]);
+		return $this;
+	}
 
-		$result = self::parseResponse($response);
+	/**
+	 * Sets the "count" query parameter.
+	 *
+	 * @returns $this
+	 */
+	public function count(int $count = null): self
+	{
+		$this->request->setQuery('count', $count);
+		return $this;
+	}
 
-		dd($result);
+	/**
+	 * Sets the "limit" query parameter.
+	 *
+	 * @returns $this
+	 */
+	public function limit(int $limit = null): self
+	{
+		$this->request->setQuery('limit', $limit);
+		return $this;
+	}
+
+	/**
+	 * Sets the "show" query parameter.
+	 *
+	 * @returns $this
+	 */
+	public function show(string $show = null): self
+	{
+		$this->request->setQuery('show', $show);
+		return $this;
 	}
 }
