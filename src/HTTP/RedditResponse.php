@@ -1,5 +1,6 @@
 <?php namespace Tatter\Reddit\HTTP;
 
+use CodeIgniter\HTTP\Message;
 use CodeIgniter\HTTP\Response;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
 use Config\Services;
@@ -86,7 +87,7 @@ class RedditResponse extends Response
 	 *
 	 * @return $this
 	 */
-	public function setBody($data): self
+	public function setBody($data): Message
 	{
 		$this->result = null;
 
