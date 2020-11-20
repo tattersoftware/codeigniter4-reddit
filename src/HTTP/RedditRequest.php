@@ -17,11 +17,18 @@ use Tatter\Reddit\Exceptions\TokensException;
 class RedditRequest extends CURLRequest
 {
 	/**
+	 * RateLimiter to manage request rates.
+	 *
+	 * @var RateLimiter
+	 */
+	protected $limiter;
+
+	/**
 	 * Token handlers in priority order.
 	 *
 	 * @var string[]
 	 */
-	public $tokenHandlers;
+	protected $tokenHandlers;
 
 	/**
 	 * Default query parameters to append to the URI.
@@ -54,7 +61,7 @@ class RedditRequest extends CURLRequest
 	/**
 	 * @param RedditConfig $config
 	 */
-	public function __construct(RedditConfig $config)
+	public function __construct(RedditConfig $config, RateLimiter $limiter = null)
 	{
 		parent::__construct(config('App'), new URI($config->baseURL), new RedditResponse(config('App')), [
 			'baseURI'     => $config->baseURL,
@@ -62,6 +69,8 @@ class RedditRequest extends CURLRequest
 			'timeout'     => 3,
 			'user_agent'  => $config->userAgent,
 		]);
+
+		$this->limiter = $limiter ?? new RateLimiter();
 
 		$this->tokenHandlers = $config->tokenHandlers;
 		$this->reset();
@@ -144,19 +153,9 @@ class RedditRequest extends CURLRequest
 
 		$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
 
+		/** @todo Apply headers to RateLimiter */
+
 		return $response;
-/*
-        protected 'name' -> string (21) "x-ratelimit-remaining"
-"       protected 'value' -> string (7) " 599.0
-    )
-    'x-ratelimit-used' => CodeIgniter\HTTP\Header (2) (
-        protected 'name' -> string (16) "x-ratelimit-used"
-"       protected 'value' -> string (3) " 1
-    )
-    'x-ratelimit-reset' => CodeIgniter\HTTP\Header (2) (
-        protected 'name' -> string (17) "x-ratelimit-reset"
-"       protected 'value' -> string (5) " 157
-*/
 	}
 
 	/**
