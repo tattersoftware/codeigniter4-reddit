@@ -151,9 +151,12 @@ class RedditRequest extends CURLRequest
 
 		$this->setHeader('Expect', '')->setHeader('Authorization', 'bearer ' . $this->token());
 
+		$this->limiter->request();
+
+		/** @var RedditResponse $response */
 		$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
 
-		/** @todo Apply headers to RateLimiter */
+		$this->limiter->respond($response->getHeaders());
 
 		return $response;
 	}

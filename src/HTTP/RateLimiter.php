@@ -33,28 +33,28 @@ class RateLimiter
 	/**
 	 * Timestamp of the last request made.
 	 *
-	 * @var int
+	 * @var int|null
 	 */
 	protected $last;
 
 	/**
 	 * Approximate number of requests used in this period.
 	 *
-	 * @var float
+	 * @var float|null
 	 */
 	protected $used;
 
 	/**
 	 * Approximate number of requests left to use.
 	 *
-	 * @var float
+	 * @var float|null
 	 */
 	protected $remaining;
 
 	/**
 	 * Approximate number of seconds to end of period.
 	 *
-	 * @var int
+	 * @var int|null
 	 */
 	protected $reset;
 
@@ -126,7 +126,7 @@ class RateLimiter
 	/**
 	 * Updates limits from response headers.
 	 *
-	 * @param array<string,Header> 
+	 * @param array<string,Header> $headers
 	 */
     public function respond(array $headers): void
     {

@@ -121,6 +121,6 @@ abstract class Kind extends Thing
 	 */
 	public function int(): int
 	{
-		return base_convert($this->id, 36, 10);
+		return (int) base_convert($this->id, 36, 10);
 	}
 }

@@ -25,9 +25,9 @@ class RateLimiterTest extends RedditTestCase
 		$this->limiter = new RateLimiter();
 
 		$this->headers = [
-			'x-ratelimit-used'      => new Header('x-ratelimit-used', 8),
-			'x-ratelimit-remaining' => new Header('x-ratelimit-remaining', 2),
-			'x-ratelimit-reset'     => new Header('x-ratelimit-reset', 2),
+			'x-ratelimit-used'      => new Header('x-ratelimit-used', '8'),
+			'x-ratelimit-remaining' => new Header('x-ratelimit-remaining', '2'),
+			'x-ratelimit-reset'     => new Header('x-ratelimit-reset', '2'),
 		];
 	}
 
@@ -74,7 +74,7 @@ class RateLimiterTest extends RedditTestCase
 	public function testLimiterDelays()
 	{
 		// Stage an exhausted quota
-		$this->headers['x-ratelimit-remaining'] = new Header('x-ratelimit-remaining', 0);
+		$this->headers['x-ratelimit-remaining'] = new Header('x-ratelimit-remaining', '0');
 		$this->limiter->respond($this->headers);
 
 		$now = time();

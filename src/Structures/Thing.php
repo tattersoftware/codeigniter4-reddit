@@ -29,7 +29,7 @@ class Thing
 	 *
 	 * @param object $input
 	 *
-	 * @return static
+	 * @return self
 	 *
 	 * @throws RedditException
 	 */
@@ -38,7 +38,7 @@ class Thing
 		// If there is no Kind then wrap it into a generic Thing
 		if (! isset($input->kind))
 		{
-			return self::__construct((object) [
+			return new self((object) [
 				'kind' => 'Thing',
 				'data' => $input
 			]);

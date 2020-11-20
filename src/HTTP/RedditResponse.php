@@ -43,7 +43,7 @@ class RedditResponse extends Response
 			// Check for errors
 			if (isset($result->error))
 			{
-				$message = $result->message ?? $result->error_description ?? $result->error;
+				$message = $result->message ?? $result->error_description ?? $result->error; // @phpstan-ignore-line
 				throw new RedditException(lang('Reddit.errorResponse', [$message]));
 			}
 
