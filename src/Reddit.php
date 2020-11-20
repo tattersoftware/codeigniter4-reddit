@@ -7,6 +7,7 @@ use Tatter\Reddit\HTTP\RedditResponse;
 use Tatter\Reddit\Structures\Listing;
 use Tatter\Reddit\Structures\Kind;
 use Tatter\Reddit\Structures\Thing;
+use stdClass;
 
 /**
  * Reddit Class
@@ -105,7 +106,7 @@ class Reddit
 	 * @param array|null $data Additional data for the request
 	 * @param array $query     Additional query parameters
 	 *
-	 * @return Kind
+	 * @return Listing|Thing|stdClass
 	 */
 	public function fetch(string $uri, $data = null, $query = [])
 	{
@@ -116,11 +117,15 @@ class Reddit
 			$uri = '/r/' . $this->getSubreddit() . $uri;
 		}
 
-		$response = $this->request($uri, $data, $query);
+		$result = $this->request($uri, $data, $query)->getResult();
+		if (empty($result->kind))
+		{
+			return $result;
+		}
 
-		return $response->getResultPath('kind') === 'Listing'
-			? new Listing($response->getResult())
-			: Thing::create($response->getResult());
+		return $result->kind === 'Listing'
+			? new Listing($result)
+			: Thing::create($result);
 	}
 
 	/**
