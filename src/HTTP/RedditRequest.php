@@ -17,17 +17,24 @@ use Tatter\Reddit\Exceptions\TokensException;
 class RedditRequest extends CURLRequest
 {
 	/**
+	 * RateLimiter to manage request rates.
+	 *
+	 * @var RateLimiter
+	 */
+	protected $limiter;
+
+	/**
 	 * Token handlers in priority order.
 	 *
 	 * @var string[]
 	 */
-	public $tokenHandlers;
+	protected $tokenHandlers;
 
 	/**
 	 * Default query parameters to append to the URI.
 	 *
-	 * - after    Fullname of an item in the listing to use as the anchor point for the beginning of the slice
-	 * - before   Fullname of an item in the listing to use as the anchor point for the end of a slice
+	 * - after    Name of an item in the listing to use as the anchor point for the beginning of the slice
+	 * - before   Name of an item in the listing to use as the anchor point for the end of a slice
 	 * - count    The number of items already seen in this listing
 	 * - limit    The maximum number of items to return in this slice of the listing
 	 * - show     Optional parameter; if "all" is passed, filters such as "hide links that I have voted on" will be disabled
@@ -54,7 +61,7 @@ class RedditRequest extends CURLRequest
 	/**
 	 * @param RedditConfig $config
 	 */
-	public function __construct(RedditConfig $config)
+	public function __construct(RedditConfig $config, RateLimiter $limiter = null)
 	{
 		parent::__construct(config('App'), new URI($config->baseURL), new RedditResponse(config('App')), [
 			'baseURI'     => $config->baseURL,
@@ -62,6 +69,8 @@ class RedditRequest extends CURLRequest
 			'timeout'     => 3,
 			'user_agent'  => $config->userAgent,
 		]);
+
+		$this->limiter = $limiter ?? new RateLimiter();
 
 		$this->tokenHandlers = $config->tokenHandlers;
 		$this->reset();
@@ -142,7 +151,14 @@ class RedditRequest extends CURLRequest
 
 		$this->setHeader('Expect', '')->setHeader('Authorization', 'bearer ' . $this->token());
 
-		return is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+		$this->limiter->request();
+
+		/** @var RedditResponse $response */
+		$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+
+		$this->limiter->respond($response->getHeaders());
+
+		return $response;
 	}
 
 	/**

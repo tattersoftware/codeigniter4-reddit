@@ -18,17 +18,30 @@ class RedditTestCase extends CIDatabaseTestCase
 	protected $namespace = 'Tatter\Reddit';
 
 	/**
+	 * @var RedditConfig
+	 */
+	protected $config;
+
+	/**
 	 * Reddit instance preconfigured for testing
 	 *
 	 * @var Reddit
 	 */
 	protected $reddit;
 
-	public function setUp(): void
+	/**
+	 * As close as possible to a "generic" URI to test
+	 *
+	 * @var string
+	 */
+	protected $uri = '/r/pythonforengineers/new';
+
+	protected function setUp(): void
 	{
 		parent::setUp();
 
-		$this->reddit = new Reddit(new RedditConfig());
+		$this->config = new RedditConfig();
+		$this->reddit = new Reddit($this->config);
 		$this->reddit->subreddit('pythonforengineers');
 	}
 }

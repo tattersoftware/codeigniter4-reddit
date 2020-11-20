@@ -28,6 +28,7 @@ class PasswordHandler implements TokensInterface
 		// Execute the cURL request
 		try
 		{
+			/** @var RedditResponse $response */
 			$response = $curl->post($config->tokenURL, [
 				'form_params' => [
 					'grant_type' => 'password',
