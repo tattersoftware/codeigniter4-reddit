@@ -1,6 +1,6 @@
 <?php namespace Tatter\Reddit\Structures;
 
-class Award extends Thing
+class Award extends Kind
 {
 	/**
 	 * Thing prefix kind.

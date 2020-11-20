@@ -13,14 +13,14 @@ class ListingTest extends CIUnitTestCase
 	/**
 	 * @dataProvider queryParameterProvider
 	 */
-	public function testConstructValidates($input, $isValid)
+	public function testConstructValidates($input, $error)
 	{
 		$object = json_decode($input, false, 512, JSON_THROW_ON_ERROR);
 
-		if (! $isValid)
+		if ($error)
 		{
 			$this->expectException(RedditException::class);
-			$this->expectExceptionMessage(lang('Reddit.invalidKindInput'));
+			$this->expectExceptionMessage($error);
 		}
 
 		$listing = new Listing($object);
@@ -32,13 +32,13 @@ class ListingTest extends CIUnitTestCase
 	public function queryParameterProvider()
 	{
 		return [
-			[$this->input, true], // valid
-			['{"data":{"children":[{"bar":"bam"},{"foo":"baz"}]}}', false], // missing kind
-			['{"kind":"listing", "data":{"children":[{"bar":"bam"},{"foo":"baz"}]}}', false], // lowercase kind
-			['{"kind":"Comment", "data":{"children":[{"bar":"bam"},{"foo":"baz"}]}}', false], // different kind
-			['{"kind":"Listing", "data":{"bar":"bam"}}', false], // data not object
-			['{"kind":"Listing", "data":{"boo":[{"bar":"bam"},{"foo":"baz"}]}}', false], // data missing children
-			['{"kind":"Listing", "data":{"children":{"bar":"bam"}}}', false], //  data children not array
+			[$this->input, ''], // valid
+			['{"data":{"children":[{"bar":"bam"},{"foo":"baz"}]}}', lang('Reddit.thingMissingKind')], // missing kind
+			['{"kind":"listing", "data":{"children":[{"bar":"bam"},{"foo":"baz"}]}}', lang('Reddit.kindMismatchedPrefix', ['listing', 'Listing'])], // lowercase kind
+			['{"kind":"Comment", "data":{"children":[{"bar":"bam"},{"foo":"baz"}]}}', lang('Reddit.kindMismatchedPrefix', ['Comment', 'Listing'])], // different kind
+			['{"kind":"Listing", "data":"bam"}', lang('Reddit.thingInvalidData')], // data not object
+			['{"kind":"Listing", "data":{"boo":[{"bar":"bam"},{"foo":"baz"}]}}', lang('Reddit.listingMissingChildren')], // data missing children
+			['{"kind":"Listing", "data":{"children":{"bar":"bam"}}}', lang('Reddit.listingInvalidChildren')], //  data children not array
 		];
 	}
 	public function testConstructSetsAfter()

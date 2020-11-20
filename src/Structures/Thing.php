@@ -1,49 +1,21 @@
 <?php namespace Tatter\Reddit\Structures;
 
 use Tatter\Reddit\Exceptions\RedditException;
-use stdClass;
 
 /**
- * Thing Abstract Class
+ * Class Thing
  *
- * Base class for all API return casts.
- *
- * @see https://github.com/reddit-archive/reddit/wiki/JSON
+ * Common class for anything returned from a
+ * successful API request.
  */
-abstract class Thing extends Kind
+class Thing
 {
 	/**
-	 * Class handlers for each prefixed kind.
-	 */
-	const KINDS = [
-		't1' => Comment::class,
-		't2' => Account::class,
-		't3' => Link::class,
-		't4' => Message::class,
-		't5' => Subreddit::class,
-		't6' => Award::class,
-	];
-
-	/**
-	 * Regex for full valid names.
-	 */
-	const REGEX = '/^t[1-5]_[A-Za-z0-9]{1,13}$/';
-
-	/**
-	 * Thing prefix kind (see KINDS).
-	 * Set by child classes.
+	 * Thing prefix (see Kind::CLASSES), "Listing", or "Thing".
 	 *
 	 * @var string
 	 */
 	protected $kind;
-
-	/**
-	 * ID portion of the fullname.
-	 * E.g. 15bfi0 of t1_15bfi0
-	 *
-	 * @var string
-	 */
-	protected $id;
 
 	/**
 	 * Data from the API
@@ -52,25 +24,60 @@ abstract class Thing extends Kind
 	 */
 	protected $data;
 
-	//--------------------------------------------------------------------
-
 	/**
-	 * Sets the data from API input.
+	 * Creates a new child class from API data.
 	 *
 	 * @param object $input
 	 *
-	 * @return $this
+	 * @return static
+	 *
+	 * @throws RedditException
 	 */
-	public function __construct(object $input = null)
+	public static function create(object $input): self
+	{
+		// If there is no Kind then wrap it into a generic Thing
+		if (! isset($input->kind))
+		{
+			return self::__construct((object) [
+				'kind' => 'Thing',
+				'data' => $input
+			]);
+		}
+
+		if ($input->kind === 'Listing')
+		{
+			return new Listing($input);
+		}
+
+		if (! isset(Kind::CLASSES[$input->kind]))
+		{
+			throw new RedditException(lang('Reddit.kindUnknownPrefix', [$input->kind]));
+		}
+
+		// Create the child class
+		$class = Kind::CLASSES[$input->kind];
+		return new $class($input);
+	}
+
+	/**
+	 * Stores class data from API input.
+	 *
+	 * @param object $input
+	 */
+	public function __construct(object $input)
 	{
 		$this->validate($input);
 
-		$this->data = $input->data;
-		$this->id   = explode('_', $input->data->name)[1];
+		// Store $data and any additional properties
+		foreach ($input as $key => $value)
+		{
+			$this->$key = $value;
+		}
 	}
 
 	/**
 	 * Validates API input.
+	 * Usually extended by a child class.
 	 *
 	 * @param object $input
 	 *
@@ -78,75 +85,34 @@ abstract class Thing extends Kind
 	 */
 	protected function validate(object $input)
 	{
-		// Validate
-		if (! isset($input->kind)
-			|| ! isset(static::KINDS[$input->kind])
-			|| $input->kind !== $this->kind
-			|| ! isset($input->data)
-			|| ! is_object($input->data)
-			|| ! isset($input->data->name)
-			|| ! is_string($input->data->name)
-			|| ! preg_match(self::REGEX, $input->data->name)
-		)
+		$error = '';
+		if (! isset($input->kind))
 		{
-dd($input);
-			throw new RedditException(lang('Reddit.invalidKindInput'));
+			$error = lang('Reddit.thingMissingKind');
+		}
+		elseif (! isset($input->data))
+		{
+			$error = lang('Reddit.thingMissingData');
+		}
+		elseif (! is_object($input->data))
+		{
+			$error = lang('Reddit.thingInvalidData');
+		}
+
+		if ($error)
+		{
+			throw new RedditException($error);
 		}
 	}
 
-	//--------------------------------------------------------------------
-
 	/**
-	 * Returns the full name of this Thing.
-	 * Prefix + underscore + UID
-	 *
-	 * @return string
-	 */
-	public function name(): string
-	{
-		return $this->kind . '_' . $this->id;
-	}
-
-	/**
-	 * Returns the prefix kind.
+	 * Returns the kind (name prefix).
 	 *
 	 * @return string
 	 */
 	public function kind(): string
 	{
 		return $this->kind;
-	}
-
-	/**
-	 * Returns the prefix-less ID.
-	 *
-	 * @return string
-	 */
-	public function id(): string
-	{
-		return $this->id;
-	}
-
-	/**
-	 * Returns the base 36 ID in its integer form
-	 *
-	 * @return int
-	 */
-	public function int(): int
-	{
-		return base_convert($this->id, 36, 10);
-	}
-
-	/**
-	 * Returns the name of this Thing's kind.
-	 *
-	 * @return string
-	 */
-	public function __toString(): string
-	{
-		$class = self::KINDS[$this->kind];
-
-		return substr($class, strrpos($class, '\\') + 1);
 	}
 
 	//--------------------------------------------------------------------
@@ -165,7 +131,7 @@ dd($input);
 		{
 			throw new RedditException(lang('Reddit.missingThingKey', [
 				$key,
-				$this->kindName(),
+				$this->__toString(),
 			]));
 		}
 
@@ -182,5 +148,17 @@ dd($input);
 	public function __isset(string $key): bool
 	{
 		return array_key_exists($key, $this->data);
+	}
+
+	/**
+	 * Returns the basename of the class.
+	 *
+	 * @return string
+	 */
+	public function __toString(): string
+	{
+		$class = get_class($this);
+
+		return substr($class, strrpos($class, '\\') + 1);
 	}
 }

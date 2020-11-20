@@ -10,11 +10,11 @@ use Tatter\Reddit\Exceptions\RedditException;
  *
  * @see https://github.com/reddit-archive/reddit/wiki/JSON#listing
  */
-class Listing extends Kind implements Iterator
+class Listing extends Thing implements Iterator
 {
 	/**
 	 * Fullname of the listing that follows after this page.
-	 * null if there is no next page.
+	 * `null` if there is no next page.
 	 *
 	 * @var string|null
 	 */
@@ -22,7 +22,7 @@ class Listing extends Kind implements Iterator
 
 	/**
 	 * Fullname of the listing that follows before this page.
-	 * null if there is no previous page.
+	 * `null` if there is no previous page.
 	 *
 	 * @var string|null
 	 */
@@ -38,22 +38,6 @@ class Listing extends Kind implements Iterator
 	//--------------------------------------------------------------------
 
 	/**
-	 * Extracts Listing fields and stores its children
-	 *
-	 * @param object $input Result of kind "Listing" from RedditResponse
-	 *
-	 * @throws RedditException
-	 */
-	public function __construct(object $input)
-	{
-		$this->validate($input);
-
-		$this->after    = $input->after ?? null;
-		$this->before   = $input->before ?? null;
-		$this->children = $input->data->children;
-	}
-
-	/**
 	 * Validates API input.
 	 *
 	 * @param object $input
@@ -62,15 +46,26 @@ class Listing extends Kind implements Iterator
 	 */
 	protected function validate(object $input)
 	{
-		if (! isset($input->kind)
-			|| $input->kind !== 'Listing'
-			|| ! isset($input->data)
-			|| ! is_object($input->data)
-			|| ! isset($input->data->children)
-			|| ! is_array($input->data->children)
-		)
+		parent::validate($input);
+
+		// Additional validation
+		$error = '';
+		if ($input->kind !== 'Listing')
 		{
-			throw new RedditException(lang('Reddit.invalidKindInput'));
+			$error = lang('Reddit.kindMismatchedPrefix', [$input->kind, 'Listing']);
+		}
+		elseif (! isset($input->data->children))
+		{
+			$error = lang('Reddit.listingMissingChildren');
+		}
+		elseif (! is_array($input->data->children))
+		{
+			$error = lang('Reddit.listingInvalidChildren');
+		}
+
+		if ($error)
+		{
+			throw new RedditException($error);
 		}
 	}
 
@@ -83,7 +78,7 @@ class Listing extends Kind implements Iterator
 	 */
 	public function current()
 	{
-		if ($input = current($this->children))
+		if ($input = current($this->data->children))
 		{
 			return Thing::create($input);
 		}
@@ -96,17 +91,17 @@ class Listing extends Kind implements Iterator
 	 */
 	public function key(): int
 	{
-		return key($this->children);
+		return key($this->data->children);
 	}
 
 	public function next(): void
 	{
-		next($this->children);
+		next($this->data->children);
 	}
 
 	public function rewind(): void
 	{
-		reset($this->children);
+		reset($this->data->children);
 	}
 
 	/**
@@ -114,9 +109,8 @@ class Listing extends Kind implements Iterator
 	 */
 	public function valid(): bool
 	{
-		$key = key($this->children);
+		$key = key($this->data->children);
 
 		return ($key !== null && $key !== null);
 	}
-
 }

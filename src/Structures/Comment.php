@@ -1,6 +1,6 @@
 <?php namespace Tatter\Reddit\Structures;
 
-class Comment extends Thing
+class Comment extends Kind
 {
 	/**
 	 * Thing prefix kind.

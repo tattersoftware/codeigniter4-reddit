@@ -1,6 +1,6 @@
 <?php namespace Tatter\Reddit\Structures;
 
-class Account extends Thing
+class Account extends Kind
 {
 	/**
 	 * Thing prefix kind.

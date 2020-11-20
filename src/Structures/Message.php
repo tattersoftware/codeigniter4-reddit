@@ -1,6 +1,6 @@
 <?php namespace Tatter\Reddit\Structures;
 
-class Message extends Thing
+class Message extends Kind
 {
 	/**
 	 * Thing prefix kind.

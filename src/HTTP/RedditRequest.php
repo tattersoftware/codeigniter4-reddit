@@ -142,7 +142,21 @@ class RedditRequest extends CURLRequest
 
 		$this->setHeader('Expect', '')->setHeader('Authorization', 'bearer ' . $this->token());
 
-		return is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+		$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+
+		return $response;
+/*
+        protected 'name' -> string (21) "x-ratelimit-remaining"
+"       protected 'value' -> string (7) " 599.0
+    )
+    'x-ratelimit-used' => CodeIgniter\HTTP\Header (2) (
+        protected 'name' -> string (16) "x-ratelimit-used"
+"       protected 'value' -> string (3) " 1
+    )
+    'x-ratelimit-reset' => CodeIgniter\HTTP\Header (2) (
+        protected 'name' -> string (17) "x-ratelimit-reset"
+"       protected 'value' -> string (5) " 157
+*/
 	}
 
 	/**
