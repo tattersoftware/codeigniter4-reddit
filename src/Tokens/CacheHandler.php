@@ -7,12 +7,19 @@ class CacheHandler implements TokensInterface
 	/**
 	 * Retrieves the access token from cache.
 	 *
+	 * @param bool $refresh Whether to force a new token request (if applicable)
+	 *
 	 * @return string The access token
 	 *
 	 * @throws TokensException
 	 */
-	public static function retrieve(): string
+	public static function retrieve(bool $refresh = false): string
 	{
+		if ($refresh)
+		{
+			cache()->delete('reddit_access_token');
+		}
+
 		if ($token = cache('reddit_access_token'))
 		{
 			return $token;
@@ -28,6 +35,6 @@ class CacheHandler implements TokensInterface
 	 */
 	public static function store(string $token): void
 	{
-		cache()->save('reddit_access_token', $token, 0);
+		cache()->save('reddit_access_token', $token, 3600);
 	}
 }

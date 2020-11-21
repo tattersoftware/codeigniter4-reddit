@@ -9,11 +9,13 @@ class ConfigHandler implements TokensInterface
 	 * Retrieves the access token from the
 	 * Config class, usually from getenv.
 	 *
+	 * @param bool $refresh Whether to force a new token request (if applicable)
+	 *
 	 * @return string The access token
 	 *
 	 * @throws TokensException
 	 */
-	public static function retrieve(): string
+	public static function retrieve(bool $refresh = false): string
 	{
 		if ($token = config('Reddit')->accessToken)
 		{
@@ -24,14 +26,12 @@ class ConfigHandler implements TokensInterface
 	}
 
 	/**
-	 * Inject the token into the config instance.
+	 * Not relevent.
 	 *
 	 * @param string $token The access token
 	 */
 	public static function store(string $token): void
 	{
-		$config = config('Reddit');
-		$config->accessToken = $token;
-		Config::injectMock('Reddit', $config);
+		return;
 	}
 }

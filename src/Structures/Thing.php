@@ -20,7 +20,7 @@ class Thing
 	/**
 	 * Data from the API
 	 *
-	 * @var array|null
+	 * @var object|null
 	 */
 	protected $data;
 
@@ -135,7 +135,7 @@ class Thing
 			]));
 		}
 
-		return $this->data[$key];
+		return $this->data->$key;
 	}
 
 	/**
@@ -147,7 +147,7 @@ class Thing
 	 */
 	public function __isset(string $key): bool
 	{
-		return array_key_exists($key, $this->data);
+		return property_exists($this->data, $key);
 	}
 
 	/**

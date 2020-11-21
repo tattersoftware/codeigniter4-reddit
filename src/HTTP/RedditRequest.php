@@ -4,6 +4,7 @@ use CodeIgniter\HTTP\CURLRequest;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
 use CodeIgniter\HTTP\URI;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
+use Tatter\Reddit\Exceptions\RedditException;
 use Tatter\Reddit\Exceptions\TokensException;
 
 /**
@@ -149,26 +150,39 @@ class RedditRequest extends CURLRequest
 			$uri .= '?' . http_build_query($query);
 		}
 
-		$this->setHeader('Expect', '')->setHeader('Authorization', 'bearer ' . $this->token());
+		$this->setHeader('Expect', '')
+			->setHeader('Accept', 'application/json')
+			->setHeader('Authorization', 'bearer ' . $this->getToken());
 
 		$this->limiter->request();
 
-		/** @var RedditResponse $response */
 		$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+
+		// Check for a failed authorization
+		if ($response->getStatusCode() === 401)
+		{
+			// Try it again with a fresh token
+			$this->setHeader('Authorization', 'bearer ' . $this->getToken(true));
+
+			$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+		}
 
 		$this->limiter->respond($response->getHeaders());
 
+		/** @var RedditResponse $response */
 		return $response;
 	}
 
 	/**
 	 * Retrieves an access token.
 	 *
+	 * @param bool $refresh Whether to force a new token
+	 *
 	 * @return string
 	 *
 	 * @throws TokensException
 	 */
-	protected function token(): string
+	protected function getToken(bool $refresh = false): string
 	{
 		// Try each handler, tracking failures
 		$failed = [];
@@ -176,7 +190,7 @@ class RedditRequest extends CURLRequest
 		{
 			try
 			{
-				$token = $class::retrieve();
+				$token = $class::retrieve($refresh);
 				break;
 			}
 			catch (TokensException $e)

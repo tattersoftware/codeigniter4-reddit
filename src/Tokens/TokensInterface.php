@@ -11,11 +11,13 @@ use Tatter\Reddit\Exceptions\TokensException;
 interface TokensInterface
 {
 	/**
+	 * @param bool $refresh Whether to force a new token request (if applicable)
+	 *
 	 * @return string The access token
 	 *
 	 * @throws TokensException
 	 */
-	public static function retrieve(): string;
+	public static function retrieve(bool $refresh = false): string;
 
 	/**
 	 * @param string $token The access token
