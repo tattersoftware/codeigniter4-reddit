@@ -14,11 +14,13 @@ class PasswordHandler implements TokensInterface
 	 * Retrieves a new access token from the
 	 * Reddit OAuth endpoint.
 	 *
+	 * @param bool $refresh Whether to force a new token request (if applicable)
+	 *
 	 * @return string The access token
 	 *
 	 * @throws TokensException
 	 */
-	public static function retrieve(): string
+	public static function retrieve(bool $refresh = false): string
 	{
 		$config = config('Reddit');
 		$curl   = (new RedditRequest($config))

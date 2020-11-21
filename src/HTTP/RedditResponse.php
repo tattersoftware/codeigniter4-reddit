@@ -38,8 +38,24 @@ class RedditResponse extends Response
 	{
 		if (is_null($this->result))
 		{
+			// Check for failure status
+			if ($this->getStatusCode() >= 300)
+			{
+				throw new RedditException(
+					lang('Reddit.failedResponse', [static::$statusCodes[$this->statusCode]]),
+					$this->statusCode
+				);
+			}
+
 			// Decode the response
-			$result = json_decode($this->getBody(), false, 512, JSON_THROW_ON_ERROR);
+			try
+			{
+				$result = json_decode($this->getBody(), false, 512, JSON_THROW_ON_ERROR);
+			}
+			catch (\JsonException $e)
+			{
+				throw new RedditException($e->getMessage(), $e->getCode(), $e);
+			}
 
 			// Check for errors
 			if (isset($result->error))

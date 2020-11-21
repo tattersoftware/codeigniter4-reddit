@@ -12,12 +12,19 @@ class MemoryHandler implements TokensInterface
 	/**
 	 * Retrieves the access token from this class.
 	 *
+	 * @param bool $refresh Whether to force a new token request (if applicable)
+	 *
 	 * @return string The access token
 	 *
 	 * @throws TokensException
 	 */
-	public static function retrieve(): string
+	public static function retrieve(bool $refresh = false): string
 	{
+		if ($refresh)
+		{
+			self::$token = '';
+		}
+
 		if (empty(self::$token))
 		{
 			throw new TokensException('Token not in memory.');

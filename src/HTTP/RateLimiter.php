@@ -142,7 +142,7 @@ class RateLimiter
     			return;
 			}
 
-			$values[$key] = $headers[$name]->getValue();
+			$values[$key] = (float) trim($headers[$name]->getValue());
     	}
 
 		// Update the properties
