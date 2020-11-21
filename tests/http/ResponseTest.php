@@ -18,11 +18,11 @@ class ResponseTest extends CIUnitTestCase
 		$this->response = new RedditResponse(config('App'));
 	}
 
-	public function testGetResultThrowsJsonException()
+	public function testGetResultThrowsException()
 	{
 		$this->response->setBody('foobar bam baz');
 
-		$this->expectException('JsonException');
+		$this->expectException(RedditException::class);
 		$this->expectExceptionMessage('Syntax error');
 		
 		$this->response->getResult();
