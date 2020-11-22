@@ -42,7 +42,7 @@ API. For more details read the [Reddit OAuth2 wiki](https://github.com/reddit-ar
 5. Select "create app"
 
 Once your application is created you will need to copy the "client ID" and "secret" (see the
-wiki article above fo help). Add these along with your username and password into your
+wiki article above for help). Add these along with your username and password into your
 project's **.env** file, for example:
 ```
 #--------------------------------------------------------------------

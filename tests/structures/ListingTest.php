@@ -8,7 +8,7 @@ class ListingTest extends CIUnitTestCase
 	/**
 	 * @var string
 	 */
-	private $input = '{"kind":"Listing", "data":{"children":[{"kind":"t3", "data":{"subreddit":"pythonforengineers","name":"t3_jw6u2r"}}]}, "after":"t3_abcdefg"}';
+	private $input = '{"kind":"Listing", "data":{"children":[{"kind":"t3", "data":{"subreddit":"pythonforengineers","name":"t3_jw6u2r"}}], "after":"t3_abcdefg"}}';
 
 	/**
 	 * @dataProvider queryParameterProvider

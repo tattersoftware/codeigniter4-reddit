@@ -13,22 +13,6 @@ use Tatter\Reddit\Exceptions\RedditException;
 class Listing extends Thing implements Iterator
 {
 	/**
-	 * Fullname of the listing that follows after this page.
-	 * `null` if there is no next page.
-	 *
-	 * @var string|null
-	 */
-	public $after;
-
-	/**
-	 * Fullname of the listing that follows before this page.
-	 * `null` if there is no previous page.
-	 *
-	 * @var string|null
-	 */
-	public $before;
-
-	/**
 	 * Children from API result.
 	 *
 	 * @var array
