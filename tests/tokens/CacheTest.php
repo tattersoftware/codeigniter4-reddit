@@ -10,30 +10,30 @@ use Tatter\Reddit\Exceptions\TokensException;
  */
 final class CacheTest extends CIUnitTestCase
 {
-	public function testRetrieveThrows()
-	{
-		$this->expectException(TokensException::class);
+    public function testRetrieveThrows()
+    {
+        $this->expectException(TokensException::class);
 
-		CacheHandler::retrieve();
-	}
+        CacheHandler::retrieve();
+    }
 
-	public function testRetrieveSucceeds()
-	{
-		$token = 'foobar';
-		cache()->save('reddit_access_token', $token);
+    public function testRetrieveSucceeds()
+    {
+        $token = 'foobar';
+        cache()->save('reddit_access_token', $token);
 
-		$result = CacheHandler::retrieve();
+        $result = CacheHandler::retrieve();
 
-		$this->assertIsString($result);
-		$this->assertSame($token, $result);
-	}
+        $this->assertIsString($result);
+        $this->assertSame($token, $result);
+    }
 
-	public function testStoreSucceeds()
-	{
-		$token = 'foobar';
+    public function testStoreSucceeds()
+    {
+        $token = 'foobar';
 
-		CacheHandler::store($token);
+        CacheHandler::store($token);
 
-		$this->assertSame($token, cache('reddit_access_token'));
-	}
+        $this->assertSame($token, cache('reddit_access_token'));
+    }
 }

@@ -11,82 +11,81 @@ use Tests\Support\RedditTestCase;
  */
 final class RateLimiterTest extends RedditTestCase
 {
-	/**
-	 * Array of example Headers to test with
-	 *
-	 * @var Header[]
-	 */
-	private $testHeaders;
+    /**
+     * Array of example Headers to test with
+     *
+     * @var Header[]
+     */
+    private $testHeaders;
 
-	/**
-	 * @var RateLimiter
-	 */
-	private $limiter;
+    /**
+     * @var RateLimiter
+     */
+    private $limiter;
 
-	protected function setUp(): void
-	{
-		parent::setUp();
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-		$this->limiter = new RateLimiter();
+        $this->limiter = new RateLimiter();
 
-		$this->testHeaders = [
-			'x-ratelimit-used'      => new Header('x-ratelimit-used', '8'),
-			'x-ratelimit-remaining' => new Header('x-ratelimit-remaining', '2'),
-			'x-ratelimit-reset'     => new Header('x-ratelimit-reset', '2'),
-		];
-	}
+        $this->testHeaders = [
+            'x-ratelimit-used'      => new Header('x-ratelimit-used', '8'),
+            'x-ratelimit-remaining' => new Header('x-ratelimit-remaining', '2'),
+            'x-ratelimit-reset'     => new Header('x-ratelimit-reset', '2'),
+        ];
+    }
 
-	/**
-	 * Returns the RateLimiter's current properties
-	 *
-	 * @return array<string,mixed>
-	 */
-	protected function getProperties(): array
-	{
-		$data = [];
+    /**
+     * Returns the RateLimiter's current properties
+     *
+     * @return array<string,mixed>
+     */
+    protected function getProperties(): array
+    {
+        $data = [];
 
-		foreach (['last', 'used', 'remaining', 'reset'] as $key)
-		{
-			$data[$key] = $this->getPrivateProperty($this->limiter, $key);
-		}
+        foreach (['last', 'used', 'remaining', 'reset'] as $key) {
+            $data[$key] = $this->getPrivateProperty($this->limiter, $key);
+        }
 
-		return $data;
-	}
+        return $data;
+    }
 
-	//--------------------------------------------------------------------
+    //--------------------------------------------------------------------
 
-	public function testRespondStoresValues()
-	{
-		$result = $this->getProperties();
-		$this->assertNull($result['last']);
-		$this->assertNull($result['remaining']);
+    public function testRespondStoresValues()
+    {
+        $result = $this->getProperties();
+        $this->assertNull($result['last']);
+        $this->assertNull($result['remaining']);
 
-		$this->limiter->respond($this->testHeaders);
+        $this->limiter->respond($this->testHeaders);
 
-		$result = $this->getProperties();
-		$this->assertSame(8, $result['used']);
-		$this->assertSame(2, $result['reset']);
-	}
+        $result = $this->getProperties();
+        $this->assertSame(8, $result['used']);
+        $this->assertSame(2, $result['reset']);
+    }
 
-	public function testEventTriggersStore()
-	{
-		$this->limiter->respond($this->testHeaders);
+    public function testEventTriggersStore()
+    {
+        $this->limiter->respond($this->testHeaders);
 
-		Events::trigger('post_system');
+        Events::trigger('post_system');
 
-		$this->assertSame(8, cache('reddit_rate_used'));
-	}
+        $this->assertSame(8, cache('reddit_rate_used'));
+    }
 
-	public function testLimiterDelays()
-	{
-		// Stage an exhausted quota
-		$this->testHeaders['x-ratelimit-remaining'] = new Header('x-ratelimit-remaining', '0');
-		$this->limiter->respond($this->testHeaders);
+    public function testLimiterDelays()
+    {
+        // Stage an exhausted quota
+        $this->testHeaders['x-ratelimit-remaining'] = new Header('x-ratelimit-remaining', '0');
+        $this->limiter->respond($this->testHeaders);
 
-		$now = time();
-		$this->limiter->request();
-		$passed = time() - $now;
+        $now = time();
+        $this->limiter->request();
+        $passed = time() - $now;
 
-		$this->assertGreaterThanOrEqual(2, $passed);
-	}
+        $this->assertGreaterThanOrEqual(2, $passed);
+    }
 }

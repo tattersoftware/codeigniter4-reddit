@@ -15,95 +15,89 @@ use Tatter\Reddit\Exceptions\RedditException;
  */
 class RedditResponse extends Response
 {
-	/**
-	 * Stored version of the result.
-	 *
-	 * @var array|object|null
-	 */
-	protected $result;
+    /**
+     * Stored version of the result.
+     *
+     * @var array|object|null
+     */
+    protected $result;
 
-	/**
-	 * Parses a Reddit API or auth response.
-	 *
-	 * @param bool $assoc Whether to return an associative array instead of object
-	 *
-	 * @throws RedditException, JsonException
-	 *
-	 * @return array|object
-	 */
-	public function getResult(bool $assoc = false)
-	{
-		if (null === $this->result)
-		{
-			// Check for failure status
-			if ($this->getStatusCode() >= 300) // @phpstan-ignore-line
-			{
-				throw new RedditException(
-				    lang('Reddit.failedResponse', [static::$statusCodes[$this->statusCode]]),
-				    $this->statusCode
-				);
-			}
+    /**
+     * Parses a Reddit API or auth response.
+     *
+     * @param bool $assoc Whether to return an associative array instead of object
+     *
+     * @throws RedditException, JsonException
+     *
+     * @return array|object
+     */
+    public function getResult(bool $assoc = false)
+    {
+        if (null === $this->result) {
+            // Check for failure status
+            if ($this->getStatusCode() >= 300) { // @phpstan-ignore-line
+                throw new RedditException(
+                    lang('Reddit.failedResponse', [static::$statusCodes[$this->statusCode]]),
+                    $this->statusCode
+                );
+            }
 
-			// Decode the response
-			try {
-				$result = json_decode($this->getBody(), false, 512, JSON_THROW_ON_ERROR);
-			} catch (JsonException $e)
-			{
-				throw new RedditException($e->getMessage(), $e->getCode(), $e);
-			}
+            // Decode the response
+            try {
+                $result = json_decode($this->getBody(), false, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                throw new RedditException($e->getMessage(), $e->getCode(), $e);
+            }
 
-			// Check for errors
-			if (isset($result->error))
-			{
-				$message = $result->message ?? $result->error_description ?? $result->error; // @phpstan-ignore-line
+            // Check for errors
+            if (isset($result->error)) {
+                $message = $result->message ?? $result->error_description ?? $result->error; // @phpstan-ignore-line
 
-				throw new RedditException(lang('Reddit.errorResponse', [$message]));
-			}
+                throw new RedditException(lang('Reddit.errorResponse', [$message]));
+            }
 
-			$this->result = $result;
-		}
+            $this->result = $result;
+        }
 
-		return $assoc ? (array) $this->result : $this->result;
-	}
+        return $assoc ? (array) $this->result : $this->result;
+    }
 
-	/**
-	 * Verifies the object path exists and returns the content.
-	 *
-	 * @param string $path Result properites in URI format, e.g. 'data/segment/part'
-	 *
-	 * @throws RedditException
-	 *
-	 * @return mixed
-	 */
-	public function getResultPath(string $path)
-	{
-		// If no result then try to get one on-the-fly
-		$object = $this->getResult();
+    /**
+     * Verifies the object path exists and returns the content.
+     *
+     * @param string $path Result properites in URI format, e.g. 'data/segment/part'
+     *
+     * @throws RedditException
+     *
+     * @return mixed
+     */
+    public function getResultPath(string $path)
+    {
+        // If no result then try to get one on-the-fly
+        $object = $this->getResult();
 
-		foreach (explode('/', $path) as $segment)
-		{
-			if (! isset($object->{$segment}))
-			{
-				throw new RedditException(lang('Reddit.unverifiedPath', [$segment, $path]));
-			}
+        foreach (explode('/', $path) as $segment) {
+            if (! isset($object->{$segment})) {
+                throw new RedditException(lang('Reddit.unverifiedPath', [$segment, $path]));
+            }
 
-			$object = $object->{$segment};
-		}
+            $object = $object->{$segment};
+        }
 
-		return $object;
-	}
+        return $object;
+    }
 
-	/**
-	 * Resets the stored $result anytime $body changes
-	 *
-	 * @param mixed $data
-	 *
-	 * @return $this
-	 */
-	public function setBody($data): Message
-	{
-		$this->result = null;
+    /**
+     * Resets the stored $result anytime $body changes
+     *
+     * @param mixed $data
+     *
+     * @return $this
+     */
+    public function setBody($data): Message
+    {
+        $this->result = null;
 
-		return parent::setBody($data);
-	}
+        return parent::setBody($data);
+    }
 }

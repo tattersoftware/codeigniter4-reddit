@@ -11,34 +11,34 @@ use Tests\Support\RedditTestCase;
  */
 final class HTTPTest extends RedditTestCase
 {
-	public function testRequestReturnsRedditResponse()
-	{
-		$response = $this->reddit->request($this->uri);
+    public function testRequestReturnsRedditResponse()
+    {
+        $response = $this->reddit->request($this->uri);
 
-		$this->assertInstanceOf(RedditResponse::class, $response);
-	}
+        $this->assertInstanceOf(RedditResponse::class, $response);
+    }
 
-	public function testFetchPrependsSubreddit()
-	{
-		$this->reddit->subreddit('php');
+    public function testFetchPrependsSubreddit()
+    {
+        $this->reddit->subreddit('php');
 
-		$this->reddit->fetch('new');
-		$result = $this->reddit->getArchive();
+        $this->reddit->fetch('new');
+        $result = $this->reddit->getArchive();
 
-		$this->assertSame('/r/php/new', $result['uri']);
-	}
+        $this->assertSame('/r/php/new', $result['uri']);
+    }
 
-	public function testFetchReturnsListing()
-	{
-		$result = $this->reddit->fetch($this->uri);
+    public function testFetchReturnsListing()
+    {
+        $result = $this->reddit->fetch($this->uri);
 
-		$this->assertInstanceOf(Listing::class, $result);
-	}
+        $this->assertInstanceOf(Listing::class, $result);
+    }
 
-	public function testFetchReturnsResult()
-	{
-		$result = $this->reddit->subreddit()->request('api/info', null, ['id' => 't3_jw6u2r'])->getResult();
+    public function testFetchReturnsResult()
+    {
+        $result = $this->reddit->subreddit()->request('api/info', null, ['id' => 't3_jw6u2r'])->getResult();
 
-		$this->assertInstanceOf('stdClass', $result);
-	}
+        $this->assertInstanceOf('stdClass', $result);
+    }
 }

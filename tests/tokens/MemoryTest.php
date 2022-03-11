@@ -10,22 +10,22 @@ use Tatter\Reddit\Exceptions\TokensException;
  */
 final class MemoryTest extends CIUnitTestCase
 {
-	public function testStoreSucceeds()
-	{
-		$token = 'foobar';
+    public function testStoreSucceeds()
+    {
+        $token = 'foobar';
 
-		MemoryHandler::store($token);
+        MemoryHandler::store($token);
 
-		$this->assertSame($token, MemoryHandler::retrieve());
-	}
+        $this->assertSame($token, MemoryHandler::retrieve());
+    }
 
-	public function testRetrieveThrows()
-	{
-		// Make sure it is blank
-		MemoryHandler::store('');
+    public function testRetrieveThrows()
+    {
+        // Make sure it is blank
+        MemoryHandler::store('');
 
-		$this->expectException(TokensException::class);
+        $this->expectException(TokensException::class);
 
-		MemoryHandler::retrieve();
-	}
+        MemoryHandler::retrieve();
+    }
 }

@@ -15,86 +15,86 @@ use CodeIgniter\Config\BaseConfig;
  */
 class Reddit extends BaseConfig
 {
-	/**
-	 * A default subreddit to apply to requests.
-	 *
-	 * @var string|null
-	 */
-	public $subreddit;
+    /**
+     * A default subreddit to apply to requests.
+     *
+     * @var string|null
+     */
+    public $subreddit;
 
-	/**
-	 * Token handlers in priority order.
-	 *
-	 * @var string[]
-	 */
-	public $tokenHandlers = [
-		'Tatter\Reddit\Tokens\MemoryHandler',
-		'Tatter\Reddit\Tokens\ConfigHandler',
-		'Tatter\Reddit\Tokens\CacheHandler',
-		'Tatter\Reddit\Tokens\PasswordHandler',
-	];
+    /**
+     * Token handlers in priority order.
+     *
+     * @var string[]
+     */
+    public $tokenHandlers = [
+        'Tatter\Reddit\Tokens\MemoryHandler',
+        'Tatter\Reddit\Tokens\ConfigHandler',
+        'Tatter\Reddit\Tokens\CacheHandler',
+        'Tatter\Reddit\Tokens\PasswordHandler',
+    ];
 
-	/**
-	 * API client ID.
-	 *
-	 * @var string
-	 */
-	public $clientId = '';
+    /**
+     * API client ID.
+     *
+     * @var string
+     */
+    public $clientId = '';
 
-	/**
-	 * API secret key.
-	 *
-	 * @var string
-	 */
-	public $clientSecret = '';
+    /**
+     * API secret key.
+     *
+     * @var string
+     */
+    public $clientSecret = '';
 
-	/**
-	 * Username for authenticating the API.
-	 *
-	 * @var string
-	 */
-	public $username = '';
+    /**
+     * Username for authenticating the API.
+     *
+     * @var string
+     */
+    public $username = '';
 
-	/**
-	 * Password for authenticating the API.
-	 *
-	 * @var string
-	 */
-	public $password = '';
+    /**
+     * Password for authenticating the API.
+     *
+     * @var string
+     */
+    public $password = '';
 
-	/**
-	 * Access token from OAuth.
-	 *
-	 * @var string
-	 */
-	public $accessToken = '';
+    /**
+     * Access token from OAuth.
+     *
+     * @var string
+     */
+    public $accessToken = '';
 
-	/**
-	 * User Agent to use for API requests. Format:
-	 * <platform>:<app ID>:<version string> (by /u/<reddit username>)
-	 *
-	 * @var string
-	 */
-	public $userAgent = 'web:com.tattersoftware.reddit:v1.0.0 (by /u/mgatner)';
+    /**
+     * User Agent to use for API requests. Format:
+     * <platform>:<app ID>:<version string> (by /u/<reddit username>)
+     *
+     * @var string
+     */
+    public $userAgent = 'web:com.tattersoftware.reddit:v1.0.0 (by /u/mgatner)';
 
-	/**
-	 * Return URL after authentication.
-	 *
-	 * @var string
-	 */
-	public $redirectURL = '';
+    /**
+     * Return URL after authentication.
+     *
+     * @var string
+     */
+    public $redirectURL = '';
 
-	/**
-	 * URL for acquiring an access token.
-	 *
-	 * @var string
-	 */
-	public $tokenURL = 'https://www.reddit.com/api/v1/access_token';
+    /**
+     * URL for acquiring an access token.
+     *
+     * @var string
+     */
+    public $tokenURL = 'https://www.reddit.com/api/v1/access_token';
 
-	/**
-	 * Base URL for API calls.
-	 *
-	 * @var string
-	 */
-	public $baseURL = 'https://oauth.reddit.com';
+    /**
+     * Base URL for API calls.
+     *
+     * @var string
+     */
+    public $baseURL = 'https://oauth.reddit.com';
 }

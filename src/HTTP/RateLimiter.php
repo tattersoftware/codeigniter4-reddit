@@ -16,53 +16,53 @@ use CodeIgniter\HTTP\Header;
  */
 class RateLimiter
 {
-	/**
-	 * @var CacheInterface
-	 */
-	protected $cache;
+    /**
+     * @var CacheInterface
+     */
+    protected $cache;
 
-	/**
-	 * Timestamp of the last request made.
-	 *
-	 * @var int|null
-	 */
-	protected $last;
+    /**
+     * Timestamp of the last request made.
+     *
+     * @var int|null
+     */
+    protected $last;
 
-	/**
-	 * Approximate number of requests used in this period.
-	 *
-	 * @var float|null
-	 */
-	protected $used;
+    /**
+     * Approximate number of requests used in this period.
+     *
+     * @var float|null
+     */
+    protected $used;
 
-	/**
-	 * Approximate number of requests left to use.
-	 *
-	 * @var float|null
-	 */
-	protected $remaining;
+    /**
+     * Approximate number of requests left to use.
+     *
+     * @var float|null
+     */
+    protected $remaining;
 
-	/**
-	 * Approximate number of seconds to end of period.
-	 *
-	 * @var float|null
-	 */
-	protected $reset;
+    /**
+     * Approximate number of seconds to end of period.
+     *
+     * @var float|null
+     */
+    protected $reset;
 
-	/**
-	 * Initializes and accesses the Cache handler
-	 * and registers the shutdown storage event
-	 */
-	public function __construct(?CacheInterface $cache = null)
-	{
-		$this->cache = $cache ?? cache();
+    /**
+     * Initializes and accesses the Cache handler
+     * and registers the shutdown storage event
+     */
+    public function __construct(?CacheInterface $cache = null)
+    {
+        $this->cache = $cache ?? cache();
 
-		$this->retrieve();
+        $this->retrieve();
 
-		Events::on('post_system', [$this, 'store']);
-	}
+        Events::on('post_system', [$this, 'store']);
+    }
 
-	//--------------------------------------------------------------------
+    //--------------------------------------------------------------------
 
     /**
      * Delays an API request, if necessary.
@@ -71,34 +71,31 @@ class RateLimiter
      */
     public function request(): void
     {
-    	// Nothing to do without data
-    	if (null === $this->remaining)
-    	{
-    		return;
-    	}
+        // Nothing to do without data
+        if (null === $this->remaining) {
+            return;
+        }
 
-		// Determine the time passed since the last request
-		$passed = $this->last ? time() - $this->last : 0;
+        // Determine the time passed since the last request
+        $passed = $this->last ? time() - $this->last : 0;
 
-		// Update the $reset timer
-		$this->reset = $this->reset - $passed;
-		$this->last  = time();
+        // Update the $reset timer
+        $this->reset = $this->reset - $passed;
+        $this->last  = time();
 
-		// Check for available requests
-		if ($this->remaining < 1)
-		{
-			// If the delay risks timing out then store preemptively
-			if ($this->reset > ini_get('max_execution_time') / 2)
-			{
-				$this->store();
-			}
+        // Check for available requests
+        if ($this->remaining < 1) {
+            // If the delay risks timing out then store preemptively
+            if ($this->reset > ini_get('max_execution_time') / 2) {
+                $this->store();
+            }
 
-			// Delay the request until the next reset
-			$this->wait((int) ceil($this->reset));
-		}
+            // Delay the request until the next reset
+            $this->wait((int) ceil($this->reset));
+        }
 
-		$this->remaining--;
-		$this->used++;
+        $this->remaining--;
+        $this->used++;
     }
 
     /**
@@ -110,7 +107,7 @@ class RateLimiter
         sleep($seconds);
     }
 
-	//--------------------------------------------------------------------
+    //--------------------------------------------------------------------
 
     /**
      * Updates limits from response headers.
@@ -119,58 +116,52 @@ class RateLimiter
      */
     public function respond(array $headers): void
     {
-		// Make sure all keys are present before updating
-		$keys = ['used', 'remaining', 'reset'];
+        // Make sure all keys are present before updating
+        $keys = ['used', 'remaining', 'reset'];
 
-		$values = [];
+        $values = [];
 
-    	foreach ($keys as $key)
-    	{
-    		$name = 'x-ratelimit-' . $key;
-    		if (! isset($headers[$name]))
-    		{
-    			return;
-			}
+        foreach ($keys as $key) {
+            $name = 'x-ratelimit-' . $key;
+            if (! isset($headers[$name])) {
+                return;
+            }
 
-			$values[$key] = (float) trim($headers[$name]->getValue());
-    	}
+            $values[$key] = (float) trim($headers[$name]->getValue());
+        }
 
-		// Update the properties
-		foreach ($values as $key => $value)
-		{
-			$this->{$key} = $value;
-		}
+        // Update the properties
+        foreach ($values as $key => $value) {
+            $this->{$key} = $value;
+        }
 
-		$this->last = time();
+        $this->last = time();
     }
 
-	/**
-	 * Attempts to load current values from cache.
-	 */
-	protected function retrieve(): void
-	{
-		$keys = ['last', 'used', 'remaining', 'reset'];
+    /**
+     * Attempts to load current values from cache.
+     */
+    protected function retrieve(): void
+    {
+        $keys = ['last', 'used', 'remaining', 'reset'];
 
-		foreach ($keys as $key)
-		{
-			$value = $this->cache->get("reddit_rate_{$key}");
-			if ($value !== null)
-			{
-				$this->{$key} = $value;
-			}
-		}
-	}
+        foreach ($keys as $key) {
+            $value = $this->cache->get("reddit_rate_{$key}");
+            if ($value !== null) {
+                $this->{$key} = $value;
+            }
+        }
+    }
 
-	/**
-	 * Stores values to the cache.
-	 */
-	public function store(): void
-	{
-		$keys = ['last', 'used', 'remaining', 'reset'];
+    /**
+     * Stores values to the cache.
+     */
+    public function store(): void
+    {
+        $keys = ['last', 'used', 'remaining', 'reset'];
 
-		foreach ($keys as $key)
-		{
-			$this->cache->save("reddit_rate_{$key}", $this->{$key}, 0);
-		}
-	}
+        foreach ($keys as $key) {
+            $this->cache->save("reddit_rate_{$key}", $this->{$key}, 0);
+        }
+    }
 }

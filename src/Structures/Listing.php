@@ -14,79 +14,74 @@ use Tatter\Reddit\Exceptions\RedditException;
  */
 class Listing extends Thing implements Iterator
 {
-	/**
-	 * Children from API result.
-	 *
-	 * @var array
-	 */
-	protected $children;
+    /**
+     * Children from API result.
+     *
+     * @var array
+     */
+    protected $children;
 
-	//--------------------------------------------------------------------
+    //--------------------------------------------------------------------
 
-	/**
-	 * Validates API input.
-	 *
-	 * @throws RedditException
-	 */
-	protected function validate(object $input)
-	{
-		parent::validate($input);
+    /**
+     * Validates API input.
+     *
+     * @throws RedditException
+     */
+    protected function validate(object $input)
+    {
+        parent::validate($input);
 
-		// Additional validation
-		$error = '';
-		if ($input->kind !== 'Listing')
-		{
-			$error = lang('Reddit.kindMismatchedPrefix', [$input->kind, 'Listing']);
-		} elseif (! isset($input->data->children))
-		{
-			$error = lang('Reddit.listingMissingChildren');
-		} elseif (! is_array($input->data->children))
-		{
-			$error = lang('Reddit.listingInvalidChildren');
-		}
+        // Additional validation
+        $error = '';
+        if ($input->kind !== 'Listing') {
+            $error = lang('Reddit.kindMismatchedPrefix', [$input->kind, 'Listing']);
+        } elseif (! isset($input->data->children)) {
+            $error = lang('Reddit.listingMissingChildren');
+        } elseif (! is_array($input->data->children)) {
+            $error = lang('Reddit.listingInvalidChildren');
+        }
 
-		if ($error)
-		{
-			throw new RedditException($error);
-		}
-	}
+        if ($error) {
+            throw new RedditException($error);
+        }
+    }
 
-	//--------------------------------------------------------------------
-	// ITERATOR METHODS
-	//--------------------------------------------------------------------
+    //--------------------------------------------------------------------
+    // ITERATOR METHODS
+    //--------------------------------------------------------------------
 
-	/**
-	 * @return false|Thing
-	 */
-	public function current()
-	{
-		if ($input = current($this->data->children))
-		{
-			return Thing::create($input);
-		}
+    /**
+     * @return false|Thing
+     */
+    public function current()
+    {
+        if ($input = current($this->data->children)) {
+            return Thing::create($input);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public function key(): int
-	{
-		return key($this->data->children);
-	}
+    public function key(): int
+    {
+        return key($this->data->children);
+    }
 
-	public function next(): void
-	{
-		next($this->data->children);
-	}
+    public function next(): void
+    {
+        next($this->data->children);
+    }
 
-	public function rewind(): void
-	{
-		reset($this->data->children);
-	}
+    public function rewind(): void
+    {
+        reset($this->data->children);
+    }
 
-	public function valid(): bool
-	{
-		$key = key($this->data->children);
+    public function valid(): bool
+    {
+        $key = key($this->data->children);
 
-		return $key !== null && $key !== null;
-	}
+        return $key !== null && $key !== null;
+    }
 }

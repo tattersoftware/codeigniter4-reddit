@@ -9,10 +9,10 @@ use CodeIgniter\Test\CIUnitTestCase;
  */
 final class ServiceTest extends CIUnitTestCase
 {
-	public function testServiceReturnsInstance()
-	{
-		$result = service('reddit');
+    public function testServiceReturnsInstance()
+    {
+        $result = service('reddit');
 
-		$this->assertInstanceOf(Reddit::class, $result);
-	}
+        $this->assertInstanceOf(Reddit::class, $result);
+    }
 }

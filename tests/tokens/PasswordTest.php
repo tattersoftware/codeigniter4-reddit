@@ -9,10 +9,10 @@ use Tests\Support\RedditTestCase;
  */
 final class PasswordTest extends RedditTestCase
 {
-	public function testRetrieve()
-	{
-		$result = PasswordHandler::retrieve();
+    public function testRetrieve()
+    {
+        $result = PasswordHandler::retrieve();
 
-		$this->assertIsString($result);
-	}
+        $this->assertIsString($result);
+    }
 }
