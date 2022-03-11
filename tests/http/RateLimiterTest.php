@@ -11,7 +11,7 @@ class RateLimiterTest extends RedditTestCase
 	 *
 	 * @var Header[]
 	 */
-	private $headers;
+	private $testHeaders;
 
 	/**
 	 * @var RateLimiter
@@ -24,7 +24,7 @@ class RateLimiterTest extends RedditTestCase
 
 		$this->limiter = new RateLimiter();
 
-		$this->headers = [
+		$this->testHeaders = [
 			'x-ratelimit-used'      => new Header('x-ratelimit-used', '8'),
 			'x-ratelimit-remaining' => new Header('x-ratelimit-remaining', '2'),
 			'x-ratelimit-reset'     => new Header('x-ratelimit-reset', '2'),
@@ -55,7 +55,7 @@ class RateLimiterTest extends RedditTestCase
 		$this->assertNull($result['last']);
 		$this->assertNull($result['remaining']);
 
-		$this->limiter->respond($this->headers);
+		$this->limiter->respond($this->testHeaders);
 
 		$result = $this->getProperties();
 		$this->assertEquals(8, $result['used']);
@@ -64,7 +64,7 @@ class RateLimiterTest extends RedditTestCase
 
 	public function testEventTriggersStore()
 	{
-		$this->limiter->respond($this->headers);
+		$this->limiter->respond($this->testHeaders);
 
 		Events::trigger('post_system');
 
@@ -74,8 +74,8 @@ class RateLimiterTest extends RedditTestCase
 	public function testLimiterDelays()
 	{
 		// Stage an exhausted quota
-		$this->headers['x-ratelimit-remaining'] = new Header('x-ratelimit-remaining', '0');
-		$this->limiter->respond($this->headers);
+		$this->testHeaders['x-ratelimit-remaining'] = new Header('x-ratelimit-remaining', '0');
+		$this->limiter->respond($this->testHeaders);
 
 		$now = time();
 		$this->limiter->request();

@@ -19,17 +19,6 @@ class RateLimiter
 	 */
 	protected $cache;
 
-/*
-       protected 'name' -> string (21) "x-ratelimit-remaining"
-       protected 'value' -> string (7) " 599.0
-
-       protected 'name' -> string (16) "x-ratelimit-used"
-       protected 'value' -> string (3) " 1
-
-       protected 'name' -> string (17) "x-ratelimit-reset"
-       protected 'value' -> string (5) " 157
-*/
-
 	/**
 	 * Timestamp of the last request made.
 	 *
@@ -54,7 +43,7 @@ class RateLimiter
 	/**
 	 * Approximate number of seconds to end of period.
 	 *
-	 * @var int|null
+	 * @var float|null
 	 */
 	protected $reset;
 
@@ -105,7 +94,7 @@ class RateLimiter
 			}
 
 			// Delay the request until the next reset
-			$this->wait($this->reset);
+			$this->wait((int) ceil($this->reset));
 		}
 
 		$this->remaining--;

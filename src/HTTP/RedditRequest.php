@@ -159,7 +159,7 @@ class RedditRequest extends CURLRequest
 		$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
 
 		// Check for a failed authorization
-		if ($response->getStatusCode() === 401)
+		if ($response->getStatusCode() === 401) // @phpstan-ignore-line
 		{
 			// Try it again with a fresh token
 			$this->setHeader('Authorization', 'bearer ' . $this->getToken(true));
@@ -167,7 +167,7 @@ class RedditRequest extends CURLRequest
 			$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
 		}
 
-		$this->limiter->respond($response->getHeaders());
+		$this->limiter->respond($response->headers());
 
 		/** @var RedditResponse $response */
 		return $response;

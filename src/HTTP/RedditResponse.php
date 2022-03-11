@@ -39,7 +39,7 @@ class RedditResponse extends Response
 		if (is_null($this->result))
 		{
 			// Check for failure status
-			if ($this->getStatusCode() >= 300)
+			if ($this->getStatusCode() >= 300) // @phpstan-ignore-line
 			{
 				throw new RedditException(
 					lang('Reddit.failedResponse', [static::$statusCodes[$this->statusCode]]),
