@@ -3,6 +3,7 @@
 namespace Tatter\Reddit\Structures;
 
 use Iterator;
+use ReturnTypeWillChange;
 use Tatter\Reddit\Exceptions\RedditException;
 
 /**
@@ -54,6 +55,7 @@ class Listing extends Thing implements Iterator
     /**
      * @return false|Thing
      */
+    #[ReturnTypeWillChange]
     public function current()
     {
         if ($input = current($this->data->children)) {
@@ -63,21 +65,25 @@ class Listing extends Thing implements Iterator
         return false;
     }
 
+    #[ReturnTypeWillChange]
     public function key(): int
     {
         return key($this->data->children);
     }
 
+    #[ReturnTypeWillChange]
     public function next(): void
     {
         next($this->data->children);
     }
 
+    #[ReturnTypeWillChange]
     public function rewind(): void
     {
         reset($this->data->children);
     }
 
+    #[ReturnTypeWillChange]
     public function valid(): bool
     {
         $key = key($this->data->children);
