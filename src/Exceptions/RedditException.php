@@ -1,5 +1,9 @@
-<?php namespace Tatter\Reddit\Exceptions;
+<?php
 
-class RedditException extends \RuntimeException
+namespace Tatter\Reddit\Exceptions;
+
+use RuntimeException;
+
+class RedditException extends RuntimeException
 {
 }

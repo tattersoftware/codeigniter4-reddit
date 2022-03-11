@@ -1,34 +1,39 @@
-<?php namespace Tatter\Reddit\Tokens;
+<?php
+
+namespace Tatter\Reddit\Tokens;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Tatter\Reddit\Exceptions\TokensException;
 
-class CacheTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class CacheTest extends CIUnitTestCase
 {
-	public function testRetrieveThrows()
-	{
-		$this->expectException(TokensException::class);
+    public function testRetrieveThrows()
+    {
+        $this->expectException(TokensException::class);
 
-		CacheHandler::retrieve();
-	}
+        CacheHandler::retrieve();
+    }
 
-	public function testRetrieveSucceeds()
-	{
-		$token = 'foobar';
-		cache()->save('reddit_access_token', $token);
+    public function testRetrieveSucceeds()
+    {
+        $token = 'foobar';
+        cache()->save('reddit_access_token', $token);
 
-		$result = CacheHandler::retrieve();
+        $result = CacheHandler::retrieve();
 
-		$this->assertIsString($result);
-		$this->assertEquals($token, $result);
-	}
+        $this->assertIsString($result);
+        $this->assertSame($token, $result);
+    }
 
-	public function testStoreSucceeds()
-	{
-		$token = 'foobar';
+    public function testStoreSucceeds()
+    {
+        $token = 'foobar';
 
-		CacheHandler::store($token);
+        CacheHandler::store($token);
 
-		$this->assertEquals($token, cache('reddit_access_token'));
-	}
+        $this->assertSame($token, cache('reddit_access_token'));
+    }
 }

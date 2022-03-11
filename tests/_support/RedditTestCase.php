@@ -1,47 +1,47 @@
-<?php namespace Tests\Support;
+<?php
 
-use CodeIgniter\Test\CIDatabaseTestCase;
-use Config\Services;
+namespace Tests\Support;
+
+use CodeIgniter\Test\CIUnitTestCase;
+use CodeIgniter\Test\DatabaseTestTrait;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
 use Tatter\Reddit\Reddit;
 
-class RedditTestCase extends CIDatabaseTestCase
+/**
+ * @internal
+ */
+abstract class RedditTestCase extends CIUnitTestCase
 {
-	/**
-	 * @var boolean
-	 */
-	protected $refresh = true;
+    use DatabaseTestTrait;
 
-	/**
-	 * @var string|array|null
-	 */
-	protected $namespace = 'Tatter\Reddit';
+    /**
+     * @var bool
+     */
+    protected $refresh = true;
 
-	/**
-	 * @var RedditConfig
-	 */
-	protected $config;
+    /**
+     * @var array|string|null
+     */
+    protected $namespace = 'Tatter\Reddit';
 
-	/**
-	 * Reddit instance preconfigured for testing
-	 *
-	 * @var Reddit
-	 */
-	protected $reddit;
+    protected RedditConfig $config;
 
-	/**
-	 * As close as possible to a "generic" URI to test
-	 *
-	 * @var string
-	 */
-	protected $uri = '/r/pythonforengineers/new';
+    /**
+     * Reddit instance preconfigured for testing
+     */
+    protected \Tatter\Reddit\Reddit $reddit;
 
-	protected function setUp(): void
-	{
-		parent::setUp();
+    /**
+     * As close as possible to a "generic" URI to test
+     */
+    protected string $uri = '/r/pythonforengineers/new';
 
-		$this->config = new RedditConfig();
-		$this->reddit = new Reddit($this->config);
-		$this->reddit->subreddit('pythonforengineers');
-	}
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->config = new RedditConfig();
+        $this->reddit = new Reddit($this->config);
+        $this->reddit->subreddit('pythonforengineers');
+    }
 }

@@ -1,15 +1,18 @@
-<?php namespace Tatter\Reddit\Tokens;
+<?php
 
-use Config\Services;
-use Tatter\Reddit\Exceptions\TokensException;
+namespace Tatter\Reddit\Tokens;
+
 use Tests\Support\RedditTestCase;
 
-class PasswordTest extends RedditTestCase
+/**
+ * @internal
+ */
+final class PasswordTest extends RedditTestCase
 {
-	public function testRetrieve()
-	{
-		$result = PasswordHandler::retrieve();
+    public function testRetrieve()
+    {
+        $result = PasswordHandler::retrieve();
 
-		$this->assertIsString($result);
-	}
+        $this->assertIsString($result);
+    }
 }

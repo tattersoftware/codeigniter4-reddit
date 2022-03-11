@@ -1,79 +1,81 @@
-<?php namespace Tatter\Reddit;
+<?php
+
+namespace Tatter\Reddit;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Tatter\Reddit\Exceptions\RedditException;
 use Tatter\Reddit\HTTP\RedditResponse;
 
-class ResponseTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class ResponseTest extends CIUnitTestCase
 {
-	/**
-	 * @var RedditResponse
-	 */
-	protected $response;
+    protected RedditResponse $response;
 
-	public function setUp(): void
-	{
-		parent::setUp();
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-		$this->response = new RedditResponse(config('App'));
-	}
+        $this->response = new RedditResponse(config('App'));
+    }
 
-	public function testGetResultThrowsException()
-	{
-		$this->response->setBody('foobar bam baz');
+    public function testGetResultThrowsException()
+    {
+        $this->response->setBody('foobar bam baz');
 
-		$this->expectException(RedditException::class);
-		$this->expectExceptionMessage('Syntax error');
-		
-		$this->response->getResult();
-	}
+        $this->expectException(RedditException::class);
+        $this->expectExceptionMessage('Syntax error');
 
-	public function testGetResultThrowsRedditException()
-	{
-		$this->response->setBody('{"error":"foo"}');
+        $this->response->getResult();
+    }
 
-		$this->expectException(RedditException::class);
-		$this->expectExceptionMessage('foo');
-		
-		$this->response->getResult();
-	}
+    public function testGetResultThrowsRedditException()
+    {
+        $this->response->setBody('{"error":"foo"}');
 
-	public function testGetResultReturnsObject()
-	{
-		$this->response->setBody('{"foo":"bar"}');
-		
-		$result = $this->response->getResult();
+        $this->expectException(RedditException::class);
+        $this->expectExceptionMessage('foo');
 
-		$this->assertIsObject($result);
-		$this->assertEquals('bar', $result->foo);
-	}
+        $this->response->getResult();
+    }
 
-	public function testGetResultReturnsArray()
-	{
-		$this->response->setBody('{"foo":"bar"}');
-		
-		$result = $this->response->getResult(true);
+    public function testGetResultReturnsObject()
+    {
+        $this->response->setBody('{"foo":"bar"}');
 
-		$this->assertIsArray($result);
-		$this->assertEquals('bar', $result['foo']);
-	}
+        $result = $this->response->getResult();
 
-	public function testGetResultPathThrows()
-	{
-		$this->response->setBody('{"foo":"bar"}');
+        $this->assertIsObject($result);
+        $this->assertSame('bar', $result->foo);
+    }
 
-		$this->expectException(RedditException::class);
-		$this->expectExceptionMessage(lang('Reddit.unverifiedPath', ['bam', 'bam/baz']));
+    public function testGetResultReturnsArray()
+    {
+        $this->response->setBody('{"foo":"bar"}');
 
-		$this->response->getResultPath('bam/baz');
-	}
+        $result = $this->response->getResult(true);
 
-	public function testGetResultPathReturnsContent()
-	{
-		$this->response->setBody('{"foo":{"bar":"bam"}}');
+        $this->assertIsArray($result);
+        $this->assertSame('bar', $result['foo']);
+    }
 
-		$result = $this->response->getResultPath('foo/bar');
+    public function testGetResultPathThrows()
+    {
+        $this->response->setBody('{"foo":"bar"}');
 
-		$this->assertEquals('bam', $result);
-	}
+        $this->expectException(RedditException::class);
+        $this->expectExceptionMessage(lang('Reddit.unverifiedPath', ['bam', 'bam/baz']));
+
+        $this->response->getResultPath('bam/baz');
+    }
+
+    public function testGetResultPathReturnsContent()
+    {
+        $this->response->setBody('{"foo":{"bar":"bam"}}');
+
+        $result = $this->response->getResultPath('foo/bar');
+
+        $this->assertSame('bam', $result);
+    }
 }

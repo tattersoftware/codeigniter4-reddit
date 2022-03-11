@@ -1,4 +1,6 @@
-<?php namespace Tatter\Reddit\Tokens;
+<?php
+
+namespace Tatter\Reddit\Tokens;
 
 use Tatter\Reddit\Exceptions\TokensException;
 
@@ -10,17 +12,17 @@ use Tatter\Reddit\Exceptions\TokensException;
  */
 interface TokensInterface
 {
-	/**
-	 * @param bool $refresh Whether to force a new token request (if applicable)
-	 *
-	 * @return string The access token
-	 *
-	 * @throws TokensException
-	 */
-	public static function retrieve(bool $refresh = false): string;
+    /**
+     * @param bool $refresh Whether to force a new token request (if applicable)
+     *
+     * @throws TokensException
+     *
+     * @return string The access token
+     */
+    public static function retrieve(bool $refresh = false): string;
 
-	/**
-	 * @param string $token The access token
-	 */
-	public static function store(string $token): void;
+    /**
+     * @param string $token The access token
+     */
+    public static function store(string $token): void;
 }
