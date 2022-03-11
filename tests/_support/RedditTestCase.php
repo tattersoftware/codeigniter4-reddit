@@ -24,24 +24,17 @@ abstract class RedditTestCase extends CIUnitTestCase
      */
     protected $namespace = 'Tatter\Reddit';
 
-    /**
-     * @var RedditConfig
-     */
-    protected $config;
+    protected RedditConfig $config;
 
     /**
      * Reddit instance preconfigured for testing
-     *
-     * @var Reddit
      */
-    protected $reddit;
+    protected \Tatter\Reddit\Reddit $reddit;
 
     /**
      * As close as possible to a "generic" URI to test
-     *
-     * @var string
      */
-    protected $uri = '/r/pythonforengineers/new';
+    protected string $uri = '/r/pythonforengineers/new';
 
     protected function setUp(): void
     {

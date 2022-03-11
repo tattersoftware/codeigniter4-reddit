@@ -11,15 +11,10 @@ final class KindTest extends CIUnitTestCase
 {
     /**
      * Input for a Link to test on
-     *
-     * @var string
      */
-    private $input = '{"kind":"t3", "data":{"subreddit":"pythonforengineers","name":"t3_jw6u2r"}}';
+    private string $input = '{"kind":"t3", "data":{"subreddit":"pythonforengineers","name":"t3_jw6u2r"}}';
 
-    /**
-     * @var Kind
-     */
-    private $kind;
+    private Kind $kind;
 
     protected function setUp(): void
     {
@@ -50,6 +45,6 @@ final class KindTest extends CIUnitTestCase
 
     public function testInt()
     {
-        $this->assertSame(1202923971, $this->kind->int());
+        $this->assertSame(1_202_923_971, $this->kind->int());
     }
 }

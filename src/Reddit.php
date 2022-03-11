@@ -40,10 +40,8 @@ class Reddit
 
     /**
      * Parameters from the last fetch, used for repeating requests
-     *
-     * @var array|null
      */
-    private $archive;
+    private ?array $archive = null;
 
     /**
      * Initializes the library.

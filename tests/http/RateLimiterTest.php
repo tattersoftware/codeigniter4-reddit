@@ -16,12 +16,9 @@ final class RateLimiterTest extends RedditTestCase
      *
      * @var Header[]
      */
-    private $testHeaders;
+    private array $testHeaders;
 
-    /**
-     * @var RateLimiter
-     */
-    private $limiter;
+    private RateLimiter $limiter;
 
     protected function setUp(): void
     {

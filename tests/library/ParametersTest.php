@@ -12,10 +12,8 @@ final class ParametersTest extends CIUnitTestCase
 {
     /**
      * Reddit instance
-     *
-     * @var Reddit
      */
-    protected $reddit;
+    protected Reddit $reddit;
 
     protected function setUp(): void
     {
@@ -29,7 +27,7 @@ final class ParametersTest extends CIUnitTestCase
         $this->expectException(RedditException::class);
         $this->expectExceptionMessage(lang('Reddit.missingSubreddit'));
 
-        $query = $this->reddit->getSubreddit();
+        $this->reddit->getSubreddit();
     }
 
     public function testSubredditSetsSubreddit()

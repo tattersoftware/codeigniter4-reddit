@@ -11,10 +11,7 @@ use Tests\Support\RedditTestCase;
  */
 final class RequestTest extends RedditTestCase
 {
-    /**
-     * @var RedditRequest
-     */
-    private $request;
+    private RedditRequest $request;
 
     protected function setUp(): void
     {

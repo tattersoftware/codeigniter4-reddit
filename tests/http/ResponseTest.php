@@ -11,10 +11,7 @@ use Tatter\Reddit\HTTP\RedditResponse;
  */
 final class ResponseTest extends CIUnitTestCase
 {
-    /**
-     * @var RedditResponse
-     */
-    protected $response;
+    protected RedditResponse $response;
 
     protected function setUp(): void
     {
