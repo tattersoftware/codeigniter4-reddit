@@ -1,5 +1,7 @@
 <?php
 
+namespace Tatter\Reddit\Language\en;
+
 return [
     'failedResponse'   => 'API failed to respond for the following reason: {0}',
     'errorResponse'    => 'API responded with an error: {0}',

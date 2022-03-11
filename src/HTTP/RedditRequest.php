@@ -197,7 +197,7 @@ class RedditRequest extends CURLRequest
         }
 
         // Try to store the token back to failed handlers
-        foreach ($failed as $class => $message) {
+        foreach (array_keys($failed) as $class) {
             $class::store($token);
         }
 

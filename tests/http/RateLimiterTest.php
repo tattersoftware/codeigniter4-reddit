@@ -60,8 +60,8 @@ final class RateLimiterTest extends RedditTestCase
         $this->limiter->respond($this->testHeaders);
 
         $result = $this->getProperties();
-        $this->assertSame(8, $result['used']);
-        $this->assertSame(2, $result['reset']);
+        $this->assertSame(8.0, $result['used']);
+        $this->assertSame(2.0, $result['reset']);
     }
 
     public function testEventTriggersStore()
@@ -70,7 +70,7 @@ final class RateLimiterTest extends RedditTestCase
 
         Events::trigger('post_system');
 
-        $this->assertSame(8, cache('reddit_rate_used'));
+        $this->assertSame(8.0, cache('reddit_rate_used'));
     }
 
     public function testLimiterDelays()
