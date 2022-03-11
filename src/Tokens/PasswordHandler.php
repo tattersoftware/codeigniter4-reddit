@@ -1,12 +1,13 @@
-<?php namespace Tatter\Reddit\Tokens;
+<?php
+
+namespace Tatter\Reddit\Tokens;
 
 use CodeIgniter\HTTP\Exceptions\HTTPException;
-use Config\Services;
 use Tatter\Reddit\Exceptions\TokensException;
 use Tatter\Reddit\HTTP\RedditRequest;
 use Tatter\Reddit\HTTP\RedditResponse;
 use Tatter\Reddit\Reddit;
-use JsonException;
+use Throwable;
 
 class PasswordHandler implements TokensInterface
 {
@@ -16,40 +17,36 @@ class PasswordHandler implements TokensInterface
 	 *
 	 * @param bool $refresh Whether to force a new token request (if applicable)
 	 *
-	 * @return string The access token
-	 *
 	 * @throws TokensException
+	 *
+	 * @return string The access token
 	 */
 	public static function retrieve(bool $refresh = false): string
 	{
 		$config = config('Reddit');
 		$curl   = (new RedditRequest($config))
-			->setHeader('Expect', '')
-			->setAuth($config->clientId, $config->clientSecret);
+		    ->setHeader('Expect', '')
+		    ->setAuth($config->clientId, $config->clientSecret);
 
 		// Execute the cURL request
-		try
-		{
+		try {
 			/** @var RedditResponse $response */
 			$response = $curl->post($config->tokenURL, [
 				'form_params' => [
 					'grant_type' => 'password',
 					'username'   => $config->username,
 					'password'   => $config->password,
-				]
+				],
 			]);
-		}
-		catch (HTTPException $e)
+		} catch (HTTPException $e)
 		{
 			throw new TokensException($e->getMessage(), $e->getCode(), $e);
 		}
 
 		// Decode the response
-		try
-		{
+		try {
 			$result = $response->getResult();
-		}
-		catch (\Throwable $e)
+		} catch (Throwable $e)
 		{
 			throw new TokensException($e->getMessage(), $e->getCode(), $e);
 		}
@@ -69,6 +66,6 @@ class PasswordHandler implements TokensInterface
 	 */
 	public static function store(string $token): void
 	{
-		return;
+
 	}
 }

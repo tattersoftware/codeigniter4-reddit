@@ -1,10 +1,15 @@
-<?php namespace Tatter\Reddit\HTTP;
+<?php
+
+namespace Tatter\Reddit\HTTP;
 
 use CodeIgniter\Events\Events;
 use CodeIgniter\HTTP\Header;
 use Tests\Support\RedditTestCase;
 
-class RateLimiterTest extends RedditTestCase
+/**
+ * @internal
+ */
+final class RateLimiterTest extends RedditTestCase
 {
 	/**
 	 * Array of example Headers to test with
@@ -39,6 +44,7 @@ class RateLimiterTest extends RedditTestCase
 	protected function getProperties(): array
 	{
 		$data = [];
+
 		foreach (['last', 'used', 'remaining', 'reset'] as $key)
 		{
 			$data[$key] = $this->getPrivateProperty($this->limiter, $key);
@@ -58,8 +64,8 @@ class RateLimiterTest extends RedditTestCase
 		$this->limiter->respond($this->testHeaders);
 
 		$result = $this->getProperties();
-		$this->assertEquals(8, $result['used']);
-		$this->assertEquals(2, $result['reset']);
+		$this->assertSame(8, $result['used']);
+		$this->assertSame(2, $result['reset']);
 	}
 
 	public function testEventTriggersStore()
@@ -68,7 +74,7 @@ class RateLimiterTest extends RedditTestCase
 
 		Events::trigger('post_system');
 
-		$this->assertEquals(8, cache('reddit_rate_used'));
+		$this->assertSame(8, cache('reddit_rate_used'));
 	}
 
 	public function testLimiterDelays()

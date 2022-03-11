@@ -1,10 +1,15 @@
-<?php namespace Tatter\Reddit;
+<?php
+
+namespace Tatter\Reddit;
 
 use Tatter\Reddit\HTTP\RedditRequest;
 use Tatter\Reddit\HTTP\RedditResponse;
 use Tests\Support\RedditTestCase;
 
-class RequestTest extends RedditTestCase
+/**
+ * @internal
+ */
+final class RequestTest extends RedditTestCase
 {
 	/**
 	 * @var RedditRequest

@@ -1,4 +1,6 @@
-<?php namespace Tatter\Reddit\Structures;
+<?php
+
+namespace Tatter\Reddit\Structures;
 
 class Comment extends Kind
 {

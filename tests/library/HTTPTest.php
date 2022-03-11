@@ -1,11 +1,15 @@
-<?php namespace Tatter\Reddit;
+<?php
+
+namespace Tatter\Reddit;
 
 use Tatter\Reddit\HTTP\RedditResponse;
 use Tatter\Reddit\Structures\Listing;
-use Tatter\Reddit\Structures\Thing;
 use Tests\Support\RedditTestCase;
 
-class HTTPTest extends RedditTestCase
+/**
+ * @internal
+ */
+final class HTTPTest extends RedditTestCase
 {
 	public function testRequestReturnsRedditResponse()
 	{
@@ -21,7 +25,7 @@ class HTTPTest extends RedditTestCase
 		$this->reddit->fetch('new');
 		$result = $this->reddit->getArchive();
 
-		$this->assertEquals('/r/php/new', $result['uri']);
+		$this->assertSame('/r/php/new', $result['uri']);
 	}
 
 	public function testFetchReturnsListing()

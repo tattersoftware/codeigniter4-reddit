@@ -1,22 +1,26 @@
-<?php namespace Tests\Support;
+<?php
+
+namespace Tests\Support;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\DatabaseTestTrait;
-use Config\Services;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
 use Tatter\Reddit\Reddit;
 
-class RedditTestCase extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class RedditTestCase extends CIUnitTestCase
 {
 	use DatabaseTestTrait;
 
 	/**
-	 * @var boolean
+	 * @var bool
 	 */
 	protected $refresh = true;
 
 	/**
-	 * @var string|array|null
+	 * @var array|string|null
 	 */
 	protected $namespace = 'Tatter\Reddit';
 

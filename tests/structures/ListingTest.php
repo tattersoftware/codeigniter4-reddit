@@ -1,9 +1,14 @@
-<?php namespace Tatter\Reddit\Structures;
+<?php
+
+namespace Tatter\Reddit\Structures;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Tatter\Reddit\Exceptions\RedditException;
 
-class ListingTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class ListingTest extends CIUnitTestCase
 {
 	/**
 	 * @var string
@@ -12,6 +17,9 @@ class ListingTest extends CIUnitTestCase
 
 	/**
 	 * @dataProvider queryParameterProvider
+	 *
+	 * @param mixed $input
+	 * @param mixed $error
 	 */
 	public function testConstructValidates($input, $error)
 	{
@@ -41,11 +49,12 @@ class ListingTest extends CIUnitTestCase
 			['{"kind":"Listing", "data":{"children":{"bar":"bam"}}}', lang('Reddit.listingInvalidChildren')], //  data children not array
 		];
 	}
+
 	public function testConstructSetsAfter()
 	{
 		$listing = new Listing(json_decode($this->input));
 
-		$this->assertEquals('t3_abcdefg', $listing->after);
+		$this->assertSame('t3_abcdefg', $listing->after);
 	}
 
 	public function testIterationCreatesThings()

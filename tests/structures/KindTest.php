@@ -1,9 +1,13 @@
-<?php namespace Tatter\Reddit\Structures;
+<?php
+
+namespace Tatter\Reddit\Structures;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Tatter\Reddit\Exceptions\RedditException;
 
-class KindTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class KindTest extends CIUnitTestCase
 {
 	/**
 	 * Input for a Link to test on
@@ -26,26 +30,26 @@ class KindTest extends CIUnitTestCase
 
 	public function testToStringReturnsKind()
 	{
-		$this->assertEquals('Link', (string) $this->kind);
+		$this->assertSame('Link', (string) $this->kind);
 	}
 
 	public function testName()
 	{
-		$this->assertEquals('t3_jw6u2r', $this->kind->name());
+		$this->assertSame('t3_jw6u2r', $this->kind->name());
 	}
 
 	public function testKind()
 	{
-		$this->assertEquals('t3', $this->kind->kind());
+		$this->assertSame('t3', $this->kind->kind());
 	}
 
 	public function testId()
 	{
-		$this->assertEquals('jw6u2r', $this->kind->id());
+		$this->assertSame('jw6u2r', $this->kind->id());
 	}
 
 	public function testInt()
 	{
-		$this->assertEquals(1202923971, $this->kind->int());
+		$this->assertSame(1202923971, $this->kind->int());
 	}
 }

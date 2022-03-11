@@ -1,7 +1,8 @@
-<?php namespace Tatter\Reddit\Structures;
+<?php
+
+namespace Tatter\Reddit\Structures;
 
 use Tatter\Reddit\Exceptions\RedditException;
-use stdClass;
 
 /**
  * Kind Abstract Class
@@ -16,12 +17,12 @@ abstract class Kind extends Thing
 	/**
 	 * Regex to validate full names.
 	 */
-	const NAME_REGEX = '/^t[1-5]_[A-Za-z0-9]{1,13}$/';
+	public const NAME_REGEX = '/^t[1-5]_[A-Za-z0-9]{1,13}$/';
 
 	/**
 	 * Class handlers for each prefix.
 	 */
-	const CLASSES = [
+	public const CLASSES = [
 		't1' => Comment::class,
 		't2' => Account::class,
 		't3' => Link::class,
@@ -47,7 +48,7 @@ abstract class Kind extends Thing
 	 *
 	 * @return $this
 	 */
-	public function __construct(object $input = null)
+	public function __construct(?object $input = null)
 	{
 		parent::__construct($input);
 
@@ -57,8 +58,6 @@ abstract class Kind extends Thing
 
 	/**
 	 * Validates API input.
-	 *
-	 * @param object $input
 	 *
 	 * @throws RedditException
 	 */
@@ -71,16 +70,13 @@ abstract class Kind extends Thing
 		if (! isset(static::CLASSES[$input->kind]))
 		{
 			$error = lang('Reddit.kindUnknownPrefix', [$input->kind]);
-		}
-		elseif ($input->kind !== $this->kind)
+		} elseif ($input->kind !== $this->kind)
 		{
 			$error = lang('Reddit.kindMismatchedPrefix', [$input->kind, $this->kind]);
-		}
-		elseif (! isset($input->data->name))
+		} elseif (! isset($input->data->name))
 		{
 			$error = lang('Reddit.kindMissingName');
-		}
-		elseif (! is_string($input->data->name) || ! preg_match(self::NAME_REGEX, $input->data->name))
+		} elseif (! is_string($input->data->name) || ! preg_match(self::NAME_REGEX, $input->data->name))
 		{
 			$error = lang('Reddit.kindInvalidName', [(string) $input->data->name]);
 		}
@@ -96,8 +92,6 @@ abstract class Kind extends Thing
 	/**
 	 * Returns the full name.
 	 * Prefix + underscore + UID
-	 *
-	 * @return string
 	 */
 	public function name(): string
 	{
@@ -106,8 +100,6 @@ abstract class Kind extends Thing
 
 	/**
 	 * Returns the prefix-less ID.
-	 *
-	 * @return string
 	 */
 	public function id(): string
 	{
@@ -116,8 +108,6 @@ abstract class Kind extends Thing
 
 	/**
 	 * Returns the base 36 ID in its integer form
-	 *
-	 * @return int
 	 */
 	public function int(): int
 	{

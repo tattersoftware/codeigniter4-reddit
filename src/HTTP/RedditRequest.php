@@ -1,10 +1,11 @@
-<?php namespace Tatter\Reddit\HTTP;
+<?php
+
+namespace Tatter\Reddit\HTTP;
 
 use CodeIgniter\HTTP\CURLRequest;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
 use CodeIgniter\HTTP\URI;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
-use Tatter\Reddit\Exceptions\RedditException;
 use Tatter\Reddit\Exceptions\TokensException;
 
 /**
@@ -59,10 +60,7 @@ class RedditRequest extends CURLRequest
 	 */
 	protected $tempQuery;
 
-	/**
-	 * @param RedditConfig $config
-	 */
-	public function __construct(RedditConfig $config, RateLimiter $limiter = null)
+	public function __construct(RedditConfig $config, ?RateLimiter $limiter = null)
 	{
 		parent::__construct(config('App'), new URI($config->baseURL), new RedditResponse(config('App')), [
 			'baseURI'     => $config->baseURL,
@@ -87,13 +85,13 @@ class RedditRequest extends CURLRequest
 	public function reset(): self
 	{
 		$this->tempQuery = $this->query;
+
 		return $this;
 	}
 
 	/**
 	 * Sets a query parameter value
 	 *
-	 * @param string $name
 	 * @param mixed|null $value
 	 *
 	 * @returns $this
@@ -113,9 +111,9 @@ class RedditRequest extends CURLRequest
 	 *
 	 * @returns array|mixed|null
 	 */
-	public function getQuery(string $name = null)
+	public function getQuery(?string $name = null)
 	{
-		if (is_null($name))
+		if (null === $name)
 		{
 			return $this->tempQuery;
 		}
@@ -128,11 +126,9 @@ class RedditRequest extends CURLRequest
 	/**
 	 * Sends a cURL request and parses the response.
 	 *
-	 * @param string $uri      URI segment (relative to baseURL)
-	 * @param array|null $data Additional data for the request
-	 * @param array $query     Additional query parameters
-	 *
-	 * @return RedditResponse
+	 * @param string     $uri   URI segment (relative to baseURL)
+	 * @param array|null $data  Additional data for the request
+	 * @param array      $query Additional query parameters
 	 *
 	 * @throws HTTPException, TokensException
 	 */
@@ -140,9 +136,7 @@ class RedditRequest extends CURLRequest
 	{
 		// Determine the query parameters, ignoring null values
 		$query = array_merge($this->tempQuery, $query);
-		$query = array_filter($query, static function($var) {
-			return $var !== null;
-		});
+		$query = array_filter($query, static fn ($var) => $var !== null);
 
 		// Append the query to the URI
 		if (! empty($query))
@@ -151,12 +145,12 @@ class RedditRequest extends CURLRequest
 		}
 
 		$this->setHeader('Expect', '')
-			->setHeader('Accept', 'application/json')
-			->setHeader('Authorization', 'bearer ' . $this->getToken());
+		    ->setHeader('Accept', 'application/json')
+		    ->setHeader('Authorization', 'bearer ' . $this->getToken());
 
 		$this->limiter->request();
 
-		$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+		$response = null === $data ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
 
 		// Check for a failed authorization
 		if ($response->getStatusCode() === 401) // @phpstan-ignore-line
@@ -164,7 +158,7 @@ class RedditRequest extends CURLRequest
 			// Try it again with a fresh token
 			$this->setHeader('Authorization', 'bearer ' . $this->getToken(true));
 
-			$response = is_null($data) ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
+			$response = null === $data ? $this->get($uri) : $this->post($uri, ['form_params' => $data]);
 		}
 
 		$this->limiter->respond($response->headers());
@@ -178,22 +172,19 @@ class RedditRequest extends CURLRequest
 	 *
 	 * @param bool $refresh Whether to force a new token
 	 *
-	 * @return string
-	 *
 	 * @throws TokensException
 	 */
 	protected function getToken(bool $refresh = false): string
 	{
 		// Try each handler, tracking failures
 		$failed = [];
+
 		foreach ($this->tokenHandlers as $class)
 		{
-			try
-			{
+			try {
 				$token = $class::retrieve($refresh);
 				break;
-			}
-			catch (TokensException $e)
+			} catch (TokensException $e)
 			{
 				$failed[$class] = $e->getMessage();
 			}
@@ -203,9 +194,10 @@ class RedditRequest extends CURLRequest
 		if (empty($token))
 		{
 			$messages = [];
+
 			foreach ($failed as $class => $message)
 			{
-				$messages[] = "$class: $message";
+				$messages[] = "{$class}: {$message}";
 			}
 
 			throw new TokensException(implode(' ', $messages));

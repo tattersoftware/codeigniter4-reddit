@@ -13,7 +13,11 @@ $finder = Finder::create()
     ->exclude('build')
     ->append([__FILE__]);
 
-$overrides = [];
+$overrides = [
+	'array_indentation' => false,
+	'braces'            => false,
+	'indentation_type'  => false,
+];
 
 $options = [
     'finder'    => $finder,

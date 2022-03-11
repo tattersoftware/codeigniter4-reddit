@@ -1,10 +1,14 @@
-<?php namespace Tatter\Reddit;
+<?php
+
+namespace Tatter\Reddit;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Tatter\Reddit\Exceptions\RedditException;
-use Tatter\Reddit\Reddit;
 
-class ParametersTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class ParametersTest extends CIUnitTestCase
 {
 	/**
 	 * Reddit instance
@@ -13,7 +17,7 @@ class ParametersTest extends CIUnitTestCase
 	 */
 	protected $reddit;
 
-	public function setUp(): void
+	protected function setUp(): void
 	{
 		parent::setUp();
 
@@ -35,7 +39,7 @@ class ParametersTest extends CIUnitTestCase
 
 		$result = $this->reddit->getSubreddit();
 
-		$this->assertEquals($subreddit, $result);
+		$this->assertSame($subreddit, $result);
 	}
 
 	public function testAfterNullsBefore()
@@ -55,7 +59,7 @@ class ParametersTest extends CIUnitTestCase
 
 		$query = $this->reddit->getQuery();
 
-		$this->assertEquals('t1_gfedcba', $query['before']);
+		$this->assertSame('t1_gfedcba', $query['before']);
 	}
 
 	public function testBeforeNullsAfter()
@@ -75,19 +79,22 @@ class ParametersTest extends CIUnitTestCase
 
 		$query = $this->reddit->getQuery();
 
-		$this->assertEquals('t1_abcdefg', $query['after']);
+		$this->assertSame('t1_abcdefg', $query['after']);
 	}
 
 	/**
 	 * @dataProvider queryParameterProvider
+	 *
+	 * @param mixed $name
+	 * @param mixed $input
 	 */
 	public function testQueryMethodsSetValue($name, $input)
 	{
-		$this->reddit->$name($input);
+		$this->reddit->{$name}($input);
 
 		$query = $this->reddit->getQuery();
 
-		$this->assertEquals($input, $query[$name]);
+		$this->assertSame($input, $query[$name]);
 	}
 
 	public function queryParameterProvider()

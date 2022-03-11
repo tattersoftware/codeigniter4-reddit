@@ -1,4 +1,6 @@
-<?php namespace Tatter\Reddit\Config;
+<?php
+
+namespace Tatter\Reddit\Config;
 
 use CodeIgniter\Config\BaseConfig;
 

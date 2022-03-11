@@ -1,9 +1,14 @@
-<?php namespace Tatter\Reddit\Tokens;
+<?php
+
+namespace Tatter\Reddit\Tokens;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Tatter\Reddit\Exceptions\TokensException;
 
-class MemoryTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class MemoryTest extends CIUnitTestCase
 {
 	public function testStoreSucceeds()
 	{
@@ -11,7 +16,7 @@ class MemoryTest extends CIUnitTestCase
 
 		MemoryHandler::store($token);
 
-		$this->assertEquals($token, MemoryHandler::retrieve());
+		$this->assertSame($token, MemoryHandler::retrieve());
 	}
 
 	public function testRetrieveThrows()

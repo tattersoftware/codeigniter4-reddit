@@ -1,9 +1,14 @@
-<?php namespace Tatter\Reddit\Tokens;
+<?php
+
+namespace Tatter\Reddit\Tokens;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Tatter\Reddit\Exceptions\TokensException;
 
-class CacheTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class CacheTest extends CIUnitTestCase
 {
 	public function testRetrieveThrows()
 	{
@@ -20,7 +25,7 @@ class CacheTest extends CIUnitTestCase
 		$result = CacheHandler::retrieve();
 
 		$this->assertIsString($result);
-		$this->assertEquals($token, $result);
+		$this->assertSame($token, $result);
 	}
 
 	public function testStoreSucceeds()
@@ -29,6 +34,6 @@ class CacheTest extends CIUnitTestCase
 
 		CacheHandler::store($token);
 
-		$this->assertEquals($token, cache('reddit_access_token'));
+		$this->assertSame($token, cache('reddit_access_token'));
 	}
 }

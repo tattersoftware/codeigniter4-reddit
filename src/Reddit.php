@@ -1,13 +1,15 @@
-<?php namespace Tatter\Reddit;
+<?php
 
+namespace Tatter\Reddit;
+
+use stdClass;
 use Tatter\Reddit\Config\Reddit as RedditConfig;
 use Tatter\Reddit\Exceptions\RedditException;
 use Tatter\Reddit\HTTP\RedditRequest;
 use Tatter\Reddit\HTTP\RedditResponse;
 use Tatter\Reddit\Structures\Listing;
-use Tatter\Reddit\Structures\Kind;
 use Tatter\Reddit\Structures\Thing;
-use stdClass;
+use Throwable;
 
 /**
  * Reddit Class
@@ -45,8 +47,6 @@ class Reddit
 
 	/**
 	 * Initializes the library.
-	 *
-	 * @param RedditConfig $config
 	 */
 	public function __construct(RedditConfig $config)
 	{
@@ -60,7 +60,6 @@ class Reddit
 	 * Gets the current subreddit.
 	 * Throws if the property is empty to prevent URI failures.
 	 *
-	 * @return string
 	 * @throws RedditException
 	 */
 	public function getSubreddit(): string
@@ -76,8 +75,6 @@ class Reddit
 	/**
 	 * Returns the RedditRequest's current query parameters.
 	 * Mostly for testing.
-	 *
-	 * @return array
 	 */
 	public function getQuery(): array
 	{
@@ -87,8 +84,6 @@ class Reddit
 	/**
 	 * Returns the archive of the last request.
 	 * Mostly for testing.
-	 *
-	 * @return array|null
 	 */
 	public function getArchive(): ?array
 	{
@@ -102,11 +97,11 @@ class Reddit
 	/**
 	 * Runs the request and processes the result into the appropriate class.
 	 *
-	 * @param string $uri      URI segment
-	 * @param array|null $data Additional data for the request
-	 * @param array $query     Additional query parameters
+	 * @param string     $uri   URI segment
+	 * @param array|null $data  Additional data for the request
+	 * @param array      $query Additional query parameters
 	 *
-	 * @return Listing|Thing|stdClass
+	 * @return Listing|stdClass|Thing
 	 */
 	public function fetch(string $uri, $data = null, $query = [])
 	{
@@ -133,11 +128,9 @@ class Reddit
 	 * the parameters and returning the RedditResponse.
 	 * Exposed for advanced options, but usually use `fetch()`.
 	 *
-	 * @param string $uri      URI segment
-	 * @param array|null $data Additional data for the request
-	 * @param array $query     Additional query parameters
-	 *
-	 * @return RedditResponse
+	 * @param string     $uri   URI segment
+	 * @param array|null $data  Additional data for the request
+	 * @param array      $query Additional query parameters
 	 *
 	 * @throws RedditException
 	 */
@@ -149,12 +142,11 @@ class Reddit
 			'query' => $query,
 		];
 
-		try
-		{
+		try {
 			$response = $this->request->fetch($uri, $data, $query);
 		}
 		// Rethrow as a RedditException
-		catch (\Throwable $e)
+		catch (Throwable $e)
 		{
 			throw new RedditException($e->getMessage(), $e->getCode(), $e);
 		}
@@ -169,14 +161,13 @@ class Reddit
 	/**
 	 * Validates and sets a subreddit
 	 *
-	 * @param string|null $subreddit
+	 * @throws RedditException
 	 *
 	 * @return $this
-	 * @throws RedditException
 	 *
 	 * @see https://github.com/snuze/snuze/blob/master/src/Reddit/Thing/Subreddit.php for regex
 	 */
-	public function subreddit(string $subreddit = null): self
+	public function subreddit(?string $subreddit = null): self
 	{
 		$pattern = '/^((?:[a-z0-9](?:[a-z0-9_]){2,20})|reddit\.com|ca|de|es|eu|fr|it|ja|nl|pl|ru)$/i';
 		if (is_string($subreddit) && ! preg_match($pattern, $subreddit))
@@ -193,10 +184,10 @@ class Reddit
 	 *
 	 * @returns $this
 	 */
-	public function after(string $after = null): self
+	public function after(?string $after = null): self
 	{
 		$this->request->setQuery('after', $after);
-		if (! is_null($after))
+		if (null !== $after)
 		{
 			$this->request->setQuery('before', null);
 		}
@@ -209,10 +200,10 @@ class Reddit
 	 *
 	 * @returns $this
 	 */
-	public function before(string $before = null): self
+	public function before(?string $before = null): self
 	{
 		$this->request->setQuery('before', $before);
-		if (! is_null($before))
+		if (null !== $before)
 		{
 			$this->request->setQuery('after', null);
 		}
@@ -225,9 +216,10 @@ class Reddit
 	 *
 	 * @returns $this
 	 */
-	public function count(int $count = null): self
+	public function count(?int $count = null): self
 	{
 		$this->request->setQuery('count', $count);
+
 		return $this;
 	}
 
@@ -236,9 +228,10 @@ class Reddit
 	 *
 	 * @returns $this
 	 */
-	public function limit(int $limit = null): self
+	public function limit(?int $limit = null): self
 	{
 		$this->request->setQuery('limit', $limit);
+
 		return $this;
 	}
 
@@ -247,9 +240,10 @@ class Reddit
 	 *
 	 * @returns $this
 	 */
-	public function show(string $show = null): self
+	public function show(?string $show = null): self
 	{
 		$this->request->setQuery('show', $show);
+
 		return $this;
 	}
 }

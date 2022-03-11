@@ -1,4 +1,6 @@
-<?php namespace Tatter\Reddit\Tokens;
+<?php
+
+namespace Tatter\Reddit\Tokens;
 
 use CodeIgniter\Config\Config;
 use Tatter\Reddit\Exceptions\TokensException;
@@ -11,9 +13,9 @@ class ConfigHandler implements TokensInterface
 	 *
 	 * @param bool $refresh Whether to force a new token request (if applicable)
 	 *
-	 * @return string The access token
-	 *
 	 * @throws TokensException
+	 *
+	 * @return string The access token
 	 */
 	public static function retrieve(bool $refresh = false): string
 	{
@@ -32,6 +34,6 @@ class ConfigHandler implements TokensInterface
 	 */
 	public static function store(string $token): void
 	{
-		return;
+
 	}
 }

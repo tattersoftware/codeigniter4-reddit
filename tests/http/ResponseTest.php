@@ -1,17 +1,22 @@
-<?php namespace Tatter\Reddit;
+<?php
+
+namespace Tatter\Reddit;
 
 use CodeIgniter\Test\CIUnitTestCase;
 use Tatter\Reddit\Exceptions\RedditException;
 use Tatter\Reddit\HTTP\RedditResponse;
 
-class ResponseTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class ResponseTest extends CIUnitTestCase
 {
 	/**
 	 * @var RedditResponse
 	 */
 	protected $response;
 
-	public function setUp(): void
+	protected function setUp(): void
 	{
 		parent::setUp();
 
@@ -24,7 +29,7 @@ class ResponseTest extends CIUnitTestCase
 
 		$this->expectException(RedditException::class);
 		$this->expectExceptionMessage('Syntax error');
-		
+
 		$this->response->getResult();
 	}
 
@@ -34,28 +39,28 @@ class ResponseTest extends CIUnitTestCase
 
 		$this->expectException(RedditException::class);
 		$this->expectExceptionMessage('foo');
-		
+
 		$this->response->getResult();
 	}
 
 	public function testGetResultReturnsObject()
 	{
 		$this->response->setBody('{"foo":"bar"}');
-		
+
 		$result = $this->response->getResult();
 
 		$this->assertIsObject($result);
-		$this->assertEquals('bar', $result->foo);
+		$this->assertSame('bar', $result->foo);
 	}
 
 	public function testGetResultReturnsArray()
 	{
 		$this->response->setBody('{"foo":"bar"}');
-		
+
 		$result = $this->response->getResult(true);
 
 		$this->assertIsArray($result);
-		$this->assertEquals('bar', $result['foo']);
+		$this->assertSame('bar', $result['foo']);
 	}
 
 	public function testGetResultPathThrows()
@@ -74,6 +79,6 @@ class ResponseTest extends CIUnitTestCase
 
 		$result = $this->response->getResultPath('foo/bar');
 
-		$this->assertEquals('bam', $result);
+		$this->assertSame('bam', $result);
 	}
 }

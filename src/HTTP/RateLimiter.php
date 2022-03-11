@@ -1,4 +1,6 @@
-<?php namespace Tatter\Reddit\HTTP;
+<?php
+
+namespace Tatter\Reddit\HTTP;
 
 use CodeIgniter\Cache\CacheInterface;
 use CodeIgniter\Events\Events;
@@ -50,10 +52,8 @@ class RateLimiter
 	/**
 	 * Initializes and accesses the Cache handler
 	 * and registers the shutdown storage event
-	 *
-	 * @param CacheInterface|null $cache
 	 */
-	public function __construct(CacheInterface $cache = null)
+	public function __construct(?CacheInterface $cache = null)
 	{
 		$this->cache = $cache ?? cache();
 
@@ -64,15 +64,15 @@ class RateLimiter
 
 	//--------------------------------------------------------------------
 
-	/**
-	 * Delays an API request, if necessary.
-	 *
-	 * @returns $this
-	 */
+    /**
+     * Delays an API request, if necessary.
+     *
+     * @returns $this
+     */
     public function request(): void
     {
     	// Nothing to do without data
-    	if (is_null($this->remaining))
+    	if (null === $this->remaining)
     	{
     		return;
     	}
@@ -101,10 +101,10 @@ class RateLimiter
 		$this->used++;
     }
 
-	/**
-	 * Sleeps for a period of time.
-	 * Split out for testing.
-	 */
+    /**
+     * Sleeps for a period of time.
+     * Split out for testing.
+     */
     protected function wait(int $seconds): void
     {
         sleep($seconds);
@@ -112,17 +112,18 @@ class RateLimiter
 
 	//--------------------------------------------------------------------
 
-	/**
-	 * Updates limits from response headers.
-	 *
-	 * @param array<string,Header> $headers
-	 */
+    /**
+     * Updates limits from response headers.
+     *
+     * @param array<string,Header> $headers
+     */
     public function respond(array $headers): void
     {
 		// Make sure all keys are present before updating
 		$keys = ['used', 'remaining', 'reset'];
 
 		$values = [];
+
     	foreach ($keys as $key)
     	{
     		$name = 'x-ratelimit-' . $key;
@@ -137,7 +138,7 @@ class RateLimiter
 		// Update the properties
 		foreach ($values as $key => $value)
 		{
-			$this->$key = $value;
+			$this->{$key} = $value;
 		}
 
 		$this->last = time();
@@ -155,7 +156,7 @@ class RateLimiter
 			$value = $this->cache->get("reddit_rate_{$key}");
 			if ($value !== null)
 			{
-				$this->$key = $value;
+				$this->{$key} = $value;
 			}
 		}
 	}
@@ -169,7 +170,7 @@ class RateLimiter
 
 		foreach ($keys as $key)
 		{
-			$this->cache->save("reddit_rate_{$key}", $this->$key, 0);
+			$this->cache->save("reddit_rate_{$key}", $this->{$key}, 0);
 		}
 	}
 }

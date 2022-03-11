@@ -1,9 +1,13 @@
-<?php namespace Tatter\Reddit;
+<?php
+
+namespace Tatter\Reddit;
 
 use CodeIgniter\Test\CIUnitTestCase;
-use Tatter\Reddit\Reddit;
 
-class ServiceTest extends CIUnitTestCase
+/**
+ * @internal
+ */
+final class ServiceTest extends CIUnitTestCase
 {
 	public function testServiceReturnsInstance()
 	{
