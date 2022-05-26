@@ -27,7 +27,8 @@ class RedditResponse extends Response
      *
      * @param bool $assoc Whether to return an associative array instead of object
      *
-     * @throws RedditException, JsonException
+     * @throws JsonException
+     * @throws RedditException
      *
      * @return array|object
      */
@@ -51,7 +52,7 @@ class RedditResponse extends Response
 
             // Check for errors
             if (isset($result->error)) {
-                $message = $result->message ?? $result->error_description ?? $result->error; // @phpstan-ignore-line
+                $message = $result->message ?? $result->error_description ?? $result->error;
 
                 throw new RedditException(lang('Reddit.errorResponse', [$message]));
             }
@@ -93,6 +94,8 @@ class RedditResponse extends Response
      * @param mixed $data
      *
      * @return $this
+     *
+     * @psalm-suppress MethodSignatureMismatch
      */
     public function setBody($data): Message
     {

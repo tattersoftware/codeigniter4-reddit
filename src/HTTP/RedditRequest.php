@@ -129,7 +129,8 @@ class RedditRequest extends CURLRequest
      * @param array|null $data  Additional data for the request
      * @param array      $query Additional query parameters
      *
-     * @throws HTTPException, TokensException
+     * @throws HTTPException
+     * @throws TokensException
      */
     public function fetch(string $uri, $data = null, $query = []): RedditResponse
     {
